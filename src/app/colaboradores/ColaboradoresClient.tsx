@@ -11,6 +11,15 @@ interface Props {
   selectedLider: string;
 }
 
+type HabKey = 'vehiculo' | 'perifoneo' | 'orador_publico' | 'redes_sociales';
+
+const HABILIDADES: { key: HabKey; label: string }[] = [
+  { key: 'vehiculo',       label: 'Vehículo' },
+  { key: 'perifoneo',      label: 'Perifoneo' },
+  { key: 'orador_publico', label: 'Orador' },
+  { key: 'redes_sociales', label: 'Redes Sociales' },
+];
+
 const SEXO = { M: 'Masculino', F: 'Femenino' };
 
 function formatFecha(fecha: string) {
@@ -18,16 +27,42 @@ function formatFecha(fecha: string) {
   return new Date(fecha).toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
+function getHab(c: Colaborador, key: HabKey): boolean {
+  return !!(c as unknown as Record<string, unknown>)[key];
+}
+
 export default function ColaboradoresClient({ colaboradores, lideres, selectedLider }: Props) {
   const router = useRouter();
   const [liderFiltro, setLiderFiltro] = useState(selectedLider);
+  const [habFiltros, setHabFiltros] = useState<Set<HabKey>>(new Set());
   const [deleting, setDeleting] = useState<number | null>(null);
 
-  const handleFiltro = (val: string) => {
+  const handleLiderFiltro = (val: string) => {
     setLiderFiltro(val);
     const params = val ? `?lider_cedula=${val}` : '';
     router.push(`/colaboradores${params}`);
   };
+
+  const toggleHab = (key: HabKey) => {
+    setHabFiltros((prev) => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
+    });
+  };
+
+  const limpiarFiltros = () => {
+    setHabFiltros(new Set());
+    handleLiderFiltro('');
+  };
+
+  const hayFiltros = liderFiltro || habFiltros.size > 0;
+
+  const filtrados = habFiltros.size === 0
+    ? colaboradores
+    : colaboradores.filter((c) =>
+        Array.from(habFiltros).every((key) => getHab(c, key))
+      );
 
   const handleDelete = async (id: number, nombre: string) => {
     if (!confirm(`¿Eliminar al colaborador "${nombre}"?`)) return;
@@ -40,34 +75,70 @@ export default function ColaboradoresClient({ colaboradores, lideres, selectedLi
 
   return (
     <>
-      {/* Filter bar */}
-      <div className="mb-5 flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-        <label className="text-sm font-medium text-slate-600 whitespace-nowrap">Filtrar por Líder:</label>
-        <select
-          value={liderFiltro}
-          onChange={(e) => handleFiltro(e.target.value)}
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white min-w-[220px]"
-        >
-          <option value="">Todos los líderes</option>
-          {lideres.map((l) => (
-            <option key={l.cedula} value={l.cedula}>
-              {l.apellidos}, {l.nombre}
-            </option>
-          ))}
-        </select>
-        {liderFiltro && (
-          <button
-            onClick={() => handleFiltro('')}
-            className="text-xs text-slate-400 hover:text-slate-600 underline"
+      {/* Barra de filtros */}
+      <div className="mb-5 bg-white border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-wrap">
+        {/* Filtro por líder */}
+        <div className="flex items-center gap-2">
+          <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap">Líder</label>
+          <select
+            value={liderFiltro}
+            onChange={(e) => handleLiderFiltro(e.target.value)}
+            className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white min-w-[190px]"
           >
-            Limpiar filtro
+            <option value="">Todos</option>
+            {lideres.map((l) => (
+              <option key={l.cedula} value={l.cedula}>
+                {l.apellidos}, {l.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="hidden sm:block w-px h-6 bg-slate-200" />
+
+        {/* Filtro por habilidades */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Habilidades</span>
+          {HABILIDADES.map(({ key, label }) => (
+            <label
+              key={key}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium cursor-pointer select-none transition-colors ${
+                habFiltros.has(key)
+                  ? 'bg-blue-600 border-blue-600 text-white'
+                  : 'bg-white border-slate-300 text-slate-600 hover:border-blue-400 hover:text-blue-600'
+              }`}
+            >
+              <input
+                type="checkbox"
+                className="sr-only"
+                checked={habFiltros.has(key)}
+                onChange={() => toggleHab(key)}
+              />
+              {label}
+            </label>
+          ))}
+        </div>
+
+        {hayFiltros && (
+          <button
+            onClick={limpiarFiltros}
+            className="ml-auto text-xs text-slate-400 hover:text-slate-600 underline whitespace-nowrap"
+          >
+            Limpiar filtros
           </button>
         )}
       </div>
 
-      {colaboradores.length === 0 ? (
+      {/* Conteo */}
+      {habFiltros.size > 0 && (
+        <p className="text-xs text-slate-500 mb-3">
+          Mostrando {filtrados.length} de {colaboradores.length} colaboradores con todas las habilidades seleccionadas
+        </p>
+      )}
+
+      {filtrados.length === 0 ? (
         <div className="text-center py-16 text-slate-400">
-          <p className="text-lg mb-2">No hay colaboradores{liderFiltro ? ' para este líder' : ''}</p>
+          <p className="text-lg mb-2">No hay colaboradores con los filtros aplicados</p>
           <Link href="/colaboradores/nuevo" className="text-blue-600 hover:underline text-sm">
             Agregar colaborador
           </Link>
@@ -81,13 +152,11 @@ export default function ColaboradoresClient({ colaboradores, lideres, selectedLi
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold">Nombre</th>
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold hidden md:table-cell">Sexo</th>
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold hidden lg:table-cell">Nacimiento</th>
-                <th className="text-left px-5 py-3 text-slate-600 font-semibold hidden sm:table-cell">Líder</th>
-                <th className="text-center px-5 py-3 text-slate-600 font-semibold hidden lg:table-cell">Habilidades</th>
                 <th className="text-right px-5 py-3 text-slate-600 font-semibold">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {colaboradores.map((c) => (
+              {filtrados.map((c) => (
                 <tr key={c.id} className="hover:bg-slate-50 transition-colors">
                   <td className="px-5 py-3.5 text-slate-500 font-mono text-xs">{c.cedula}</td>
                   <td className="px-5 py-3.5">
@@ -101,17 +170,8 @@ export default function ColaboradoresClient({ colaboradores, lideres, selectedLi
                       {SEXO[c.sexo]}
                     </span>
                   </td>
-                  <td className="px-5 py-3.5 text-slate-500 text-xs hidden lg:table-cell">{formatFecha(c.fecha_nacimiento)}</td>
-                  <td className="px-5 py-3.5 hidden sm:table-cell">
-                    <p className="text-slate-700 text-xs">{c.lider_apellidos}, {c.lider_nombre}</p>
-                  </td>
-                  <td className="px-5 py-3.5 hidden lg:table-cell">
-                    <div className="flex justify-center gap-1 flex-wrap">
-                      {c.habilidades?.vehiculo       && <HabBadge label="Vehículo" />}
-                      {c.habilidades?.perifoneo      && <HabBadge label="Perifoneo" />}
-                      {c.habilidades?.orador_publico && <HabBadge label="Orador" />}
-                      {c.habilidades?.redes_sociales && <HabBadge label="Redes" />}
-                    </div>
+                  <td className="px-5 py-3.5 text-slate-500 text-xs hidden lg:table-cell">
+                    {formatFecha(c.fecha_nacimiento)}
                   </td>
                   <td className="px-5 py-3.5 text-right">
                     <div className="flex justify-end gap-2">
@@ -137,13 +197,5 @@ export default function ColaboradoresClient({ colaboradores, lideres, selectedLi
         </div>
       )}
     </>
-  );
-}
-
-function HabBadge({ label }: { label: string }) {
-  return (
-    <span className="text-xs bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded font-medium">
-      {label}
-    </span>
   );
 }
