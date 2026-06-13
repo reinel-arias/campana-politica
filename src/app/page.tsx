@@ -1,101 +1,132 @@
-import Image from "next/image";
+import Link from 'next/link';
+import pool from '@/lib/db';
+import { RowDataPacket } from 'mysql2';
+import { Lider } from '@/types';
 
-export default function Home() {
+async function getLideresConConteo(): Promise<Lider[]> {
+  const [rows] = await pool.query<RowDataPacket[]>(`
+    SELECT l.*, COUNT(c.id) AS total_colaboradores
+    FROM lideres l
+    LEFT JOIN colaboradores c ON c.lider_cedula = l.cedula
+    GROUP BY l.id
+    ORDER BY l.apellidos, l.nombre
+  `);
+  return rows as Lider[];
+}
+
+async function getTotales() {
+  const [r1] = await pool.query<RowDataPacket[]>('SELECT COUNT(*) AS total FROM lideres');
+  const [r2] = await pool.query<RowDataPacket[]>('SELECT COUNT(*) AS total FROM colaboradores');
+  return {
+    lideres: (r1[0] as { total: number }).total,
+    colaboradores: (r2[0] as { total: number }).total,
+  };
+}
+
+export default async function DashboardPage() {
+  let lideres: Lider[] = [];
+  let totales = { lideres: 0, colaboradores: 0 };
+  let dbError = false;
+
+  try {
+    [lideres, totales] = await Promise.all([getLideresConConteo(), getTotales()]);
+  } catch {
+    dbError = true;
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="p-6 lg:p-8 max-w-6xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
+        <p className="text-slate-500 text-sm mt-1">Resumen general de la campaña</p>
+      </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {dbError && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          No se pudo conectar a la base de datos. Verifique que MariaDB esté corriendo en 127.0.0.1.
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+        <StatCard label="Total Líderes"       value={totales.lideres}       href="/lideres"       color="blue" />
+        <StatCard label="Total Colaboradores" value={totales.colaboradores} href="/colaboradores" color="emerald" />
+      </div>
+
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold text-slate-800">Líderes y colaboradores</h2>
+        <Link
+          href="/lideres/nuevo"
+          className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
         >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          + Nuevo Líder
+        </Link>
+      </div>
+
+      {lideres.length === 0 && !dbError ? (
+        <div className="text-center py-16 text-slate-400">
+          <p className="text-lg mb-2">No hay líderes registrados</p>
+          <Link href="/lideres/nuevo" className="text-blue-600 hover:underline text-sm">
+            Crear el primer líder
+          </Link>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {lideres.map((lider) => (
+            <LiderCard key={lider.id} lider={lider} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StatCard({
+  label, value, href, color,
+}: {
+  label: string; value: number; href: string; color: 'blue' | 'emerald';
+}) {
+  const colors = {
+    blue:    'bg-blue-50 border-blue-100 text-blue-700',
+    emerald: 'bg-emerald-50 border-emerald-100 text-emerald-700',
+  };
+  return (
+    <Link href={href} className={`block p-5 rounded-xl border ${colors[color]} hover:shadow-sm transition-shadow`}>
+      <p className="text-3xl font-bold">{value}</p>
+      <p className="text-sm mt-1 font-medium opacity-80">{label}</p>
+    </Link>
+  );
+}
+
+function LiderCard({ lider }: { lider: Lider }) {
+  return (
+    <div className="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-sm transition-shadow">
+      <div className="flex items-start justify-between">
+        <div>
+          <h3 className="font-semibold text-slate-800">{lider.apellidos}, {lider.nombre}</h3>
+          <p className="text-xs text-slate-400 mt-0.5">CC {lider.cedula}</p>
+        </div>
+        <span className="bg-blue-100 text-blue-700 text-xs font-semibold px-2.5 py-1 rounded-full">
+          {lider.total_colaboradores ?? 0}
+        </span>
+      </div>
+      {lider.telefono && (
+        <p className="text-xs text-slate-500 mt-3">{lider.telefono}</p>
+      )}
+      <div className="mt-4 flex gap-2">
+        <Link
+          href={`/colaboradores?lider_cedula=${lider.cedula}`}
+          className="text-xs text-blue-600 hover:underline"
         >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          Ver colaboradores
+        </Link>
+        <span className="text-slate-200">|</span>
+        <Link
+          href={`/lideres/${lider.id}`}
+          className="text-xs text-slate-500 hover:text-slate-700 hover:underline"
         >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          Editar
+        </Link>
+      </div>
     </div>
   );
 }
