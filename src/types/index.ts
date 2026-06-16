@@ -25,6 +25,7 @@ export interface Colaborador {
   fecha_nacimiento: string;
   direccion: string;
   telefono: string;
+  email: string;
   lider_cedula: string;
   creado_en?: string;
   lider_nombre?: string;
@@ -48,5 +49,6 @@ export interface ColaboradorFormData {
   fecha_nacimiento: string;
   direccion: string;
   telefono: string;
+  email: string;
   lider_cedula: string;
 }

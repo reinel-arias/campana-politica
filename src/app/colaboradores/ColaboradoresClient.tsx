@@ -22,9 +22,13 @@ const HABILIDADES: { key: HabKey; label: string }[] = [
 
 const SEXO = { M: 'Masculino', F: 'Femenino' };
 
-function formatFecha(fecha: string) {
-  if (!fecha) return '';
-  return new Date(fecha).toLocaleDateString('es-CO', { year: 'numeric', month: 'short', day: 'numeric' });
+function calcularEdad(fechaNacimiento: string): number {
+  const hoy = new Date();
+  const nac = new Date(fechaNacimiento);
+  let edad = hoy.getFullYear() - nac.getFullYear();
+  const m = hoy.getMonth() - nac.getMonth();
+  if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
+  return edad;
 }
 
 function getHab(c: Colaborador, key: HabKey): boolean {
@@ -151,7 +155,7 @@ export default function ColaboradoresClient({ colaboradores, lideres, selectedLi
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold">Cédula</th>
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold">Nombre</th>
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold hidden md:table-cell">Sexo</th>
-                <th className="text-left px-5 py-3 text-slate-600 font-semibold hidden lg:table-cell">Nacimiento</th>
+                <th className="text-left px-5 py-3 text-slate-600 font-semibold hidden lg:table-cell">Edad</th>
                 <th className="text-right px-5 py-3 text-slate-600 font-semibold">Acciones</th>
               </tr>
             </thead>
@@ -171,7 +175,7 @@ export default function ColaboradoresClient({ colaboradores, lideres, selectedLi
                     </span>
                   </td>
                   <td className="px-5 py-3.5 text-slate-500 text-xs hidden lg:table-cell">
-                    {formatFecha(c.fecha_nacimiento)}
+                    {calcularEdad(c.fecha_nacimiento)} años
                   </td>
                   <td className="px-5 py-3.5 text-right">
                     <div className="flex justify-end gap-2">

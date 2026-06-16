@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
   const conn = await pool.getConnection();
   try {
     const body = await req.json();
-    const { cedula, nombre, apellidos, sexo, fecha_nacimiento, direccion, telefono, lider_cedula } = body;
+    const { cedula, nombre, apellidos, sexo, fecha_nacimiento, direccion, telefono, email, lider_cedula } = body;
 
     if (!cedula || !nombre || !apellidos || !sexo || !fecha_nacimiento || !lider_cedula) {
       return NextResponse.json({ error: 'Todos los campos requeridos deben estar completos' }, { status: 400 });
@@ -49,9 +49,9 @@ export async function POST(req: NextRequest) {
     await conn.beginTransaction();
 
     const [result] = await conn.query<ResultSetHeader>(
-      `INSERT INTO colaboradores (cedula, nombre, apellidos, sexo, fecha_nacimiento, direccion, telefono, lider_cedula)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [cedula.trim(), nombre.trim(), apellidos.trim(), sexo, fecha_nacimiento, (direccion || '').trim(), (telefono || '').trim(), lider_cedula]
+      `INSERT INTO colaboradores (cedula, nombre, apellidos, sexo, fecha_nacimiento, direccion, telefono, email, lider_cedula)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [cedula.trim(), nombre.trim(), apellidos.trim(), sexo, fecha_nacimiento, (direccion || '').trim(), (telefono || '').trim(), (email || '').trim(), lider_cedula]
     );
 
     await conn.query(

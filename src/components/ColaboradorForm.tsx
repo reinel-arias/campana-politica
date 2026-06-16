@@ -19,6 +19,7 @@ const schema = z.object({
   fecha_nacimiento: z.string().min(1, 'La fecha es requerida'),
   direccion:        z.string().max(255),
   telefono:         z.string().max(20),
+  email:            z.string().email('Email inválido').max(255).or(z.literal('')),
   lider_cedula:     z.string().min(1, 'Selecciona un líder'),
 });
 
@@ -42,6 +43,7 @@ export default function ColaboradorForm({ defaultValues, lideres, onSubmit, isLo
       fecha_nacimiento: defaultValues?.fecha_nacimiento ?? '',
       direccion:        defaultValues?.direccion        ?? '',
       telefono:         defaultValues?.telefono         ?? '',
+      email:            defaultValues?.email            ?? '',
       lider_cedula:     defaultValues?.lider_cedula     ?? '',
     },
   });
@@ -95,6 +97,15 @@ export default function ColaboradorForm({ defaultValues, lideres, onSubmit, isLo
 
       <Field label="Dirección" error={errors.direccion?.message}>
         <input {...register('direccion')} placeholder="Dirección completa" className={inputCls(!!errors.direccion)} />
+      </Field>
+
+      <Field label="Email" error={errors.email?.message}>
+        <input
+          {...register('email')}
+          type="email"
+          placeholder="correo@ejemplo.com"
+          className={inputCls(!!errors.email)}
+        />
       </Field>
 
       <Field label="Líder asignado *" error={errors.lider_cedula?.message}>

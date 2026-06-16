@@ -27,22 +27,27 @@ CREATE TABLE IF NOT EXISTS lideres (
 -- Tabla: colaboradores
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS colaboradores (
-  id               INT         NOT NULL AUTO_INCREMENT,
-  cedula           VARCHAR(20) NOT NULL,
+  id               INT          NOT NULL AUTO_INCREMENT,
+  cedula           VARCHAR(20)  NOT NULL,
   nombre           VARCHAR(100) NOT NULL,
   apellidos        VARCHAR(100) NOT NULL,
-  sexo             CHAR(1)     NOT NULL COMMENT 'M o F',
-  fecha_nacimiento DATE        NOT NULL,
+  sexo             CHAR(1)      NOT NULL COMMENT 'M o F',
+  fecha_nacimiento DATE         NOT NULL,
   direccion        VARCHAR(255) NOT NULL DEFAULT '',
   telefono         VARCHAR(20)  NOT NULL DEFAULT '',
+  email            VARCHAR(255) NOT NULL DEFAULT '',
   lider_cedula     VARCHAR(20)  NOT NULL,
-  creado_en        TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  creado_en        TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   UNIQUE KEY uk_colaboradores_cedula (cedula),
   CONSTRAINT fk_colaboradores_lider
     FOREIGN KEY (lider_cedula) REFERENCES lideres (cedula)
     ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Migración: agregar email si la tabla ya existe sin esa columna
+ALTER TABLE colaboradores
+  ADD COLUMN IF NOT EXISTS email VARCHAR(255) NOT NULL DEFAULT '' AFTER telefono;
 
 -- ------------------------------------------------------------
 -- Tabla: habilidades_colaborador

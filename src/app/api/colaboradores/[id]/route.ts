@@ -28,7 +28,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   const conn = await pool.getConnection();
   try {
     const body = await req.json();
-    const { cedula, nombre, apellidos, sexo, fecha_nacimiento, direccion, telefono, lider_cedula, habilidades } = body;
+    const { cedula, nombre, apellidos, sexo, fecha_nacimiento, direccion, telefono, email, lider_cedula, habilidades } = body;
 
     if (!cedula || !nombre || !apellidos || !sexo || !fecha_nacimiento || !lider_cedula) {
       return NextResponse.json({ error: 'Todos los campos requeridos deben estar completos' }, { status: 400 });
@@ -38,9 +38,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
     const [result] = await conn.query<ResultSetHeader>(
       `UPDATE colaboradores SET cedula=?, nombre=?, apellidos=?, sexo=?, fecha_nacimiento=?,
-       direccion=?, telefono=?, lider_cedula=? WHERE id=?`,
+       direccion=?, telefono=?, email=?, lider_cedula=? WHERE id=?`,
       [cedula.trim(), nombre.trim(), apellidos.trim(), sexo, fecha_nacimiento,
-       (direccion || '').trim(), (telefono || '').trim(), lider_cedula, params.id]
+       (direccion || '').trim(), (telefono || '').trim(), (email || '').trim(), lider_cedula, params.id]
     );
 
     if (result.affectedRows === 0) {

@@ -9,7 +9,7 @@ import { Lider } from '@/types';
 type ColabFormValues = {
   cedula: string; nombre: string; apellidos: string;
   sexo: 'M' | 'F'; fecha_nacimiento: string;
-  direccion: string; telefono: string; lider_cedula: string;
+  direccion: string; telefono: string; email: string; lider_cedula: string;
 };
 
 export default function NuevoColaboradorPage() {

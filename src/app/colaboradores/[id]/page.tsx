@@ -10,7 +10,7 @@ import { Colaborador, Habilidades, Lider } from '@/types';
 type ColabFormValues = {
   cedula: string; nombre: string; apellidos: string;
   sexo: 'M' | 'F'; fecha_nacimiento: string;
-  direccion: string; telefono: string; lider_cedula: string;
+  direccion: string; telefono: string; email: string; lider_cedula: string;
 };
 
 
@@ -95,6 +95,7 @@ export default function EditarColaboradorPage() {
     fecha_nacimiento: colaborador.fecha_nacimiento?.split('T')[0] ?? '',
     direccion:        colaborador.direccion,
     telefono:         colaborador.telefono,
+    email:            colaborador.email ?? '',
     lider_cedula:     colaborador.lider_cedula,
   };
 
