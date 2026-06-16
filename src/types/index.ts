@@ -1,3 +1,16 @@
+export interface Comuna {
+  id: number;
+  nombre: string;
+  total_barrios?: number;
+}
+
+export interface Barrio {
+  id: number;
+  nombre: string;
+  comuna_id: number;
+  comuna_nombre?: string;
+}
+
 export interface Lider {
   id: number;
   cedula: string;
@@ -27,6 +40,9 @@ export interface Colaborador {
   telefono: string;
   email: string;
   lider_cedula: string;
+  barrio_id?: number | null;
+  barrio_nombre?: string;
+  comuna_nombre?: string;
   creado_en?: string;
   lider_nombre?: string;
   lider_apellidos?: string;
@@ -51,4 +67,5 @@ export interface ColaboradorFormData {
   telefono: string;
   email: string;
   lider_cedula: string;
+  barrio_id?: number | null;
 }

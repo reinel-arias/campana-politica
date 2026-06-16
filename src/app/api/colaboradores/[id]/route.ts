@@ -7,10 +7,14 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     const [rows] = await pool.query<RowDataPacket[]>(`
       SELECT c.*,
              l.nombre AS lider_nombre, l.apellidos AS lider_apellidos,
-             h.vehiculo, h.perifoneo, h.orador_publico, h.redes_sociales
+             h.vehiculo, h.perifoneo, h.orador_publico, h.redes_sociales,
+             b.nombre AS barrio_nombre, b.comuna_id,
+             co.nombre AS comuna_nombre
       FROM colaboradores c
       JOIN lideres l ON c.lider_cedula = l.cedula
       LEFT JOIN habilidades_colaborador h ON h.colaborador_id = c.id
+      LEFT JOIN barrios b ON c.barrio_id = b.id
+      LEFT JOIN comunas co ON b.comuna_id = co.id
       WHERE c.id = ?
     `, [params.id]);
 
@@ -28,7 +32,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   const conn = await pool.getConnection();
   try {
     const body = await req.json();
-    const { cedula, nombre, apellidos, sexo, fecha_nacimiento, direccion, telefono, email, lider_cedula, habilidades } = body;
+    const { cedula, nombre, apellidos, sexo, fecha_nacimiento, direccion, telefono, email, lider_cedula, barrio_id, habilidades } = body;
 
     if (!cedula || !nombre || !apellidos || !sexo || !fecha_nacimiento || !lider_cedula) {
       return NextResponse.json({ error: 'Todos los campos requeridos deben estar completos' }, { status: 400 });
@@ -38,9 +42,10 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
     const [result] = await conn.query<ResultSetHeader>(
       `UPDATE colaboradores SET cedula=?, nombre=?, apellidos=?, sexo=?, fecha_nacimiento=?,
-       direccion=?, telefono=?, email=?, lider_cedula=? WHERE id=?`,
+       direccion=?, telefono=?, email=?, lider_cedula=?, barrio_id=? WHERE id=?`,
       [cedula.trim(), nombre.trim(), apellidos.trim(), sexo, fecha_nacimiento,
-       (direccion || '').trim(), (telefono || '').trim(), (email || '').trim(), lider_cedula, params.id]
+       (direccion || '').trim(), (telefono || '').trim(), (email || '').trim(),
+       lider_cedula, barrio_id || null, params.id]
     );
 
     if (result.affectedRows === 0) {

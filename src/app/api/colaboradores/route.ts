@@ -11,10 +11,14 @@ export async function GET(req: NextRequest) {
       SELECT c.*,
              l.nombre AS lider_nombre,
              l.apellidos AS lider_apellidos,
-             h.vehiculo, h.perifoneo, h.orador_publico, h.redes_sociales
+             h.vehiculo, h.perifoneo, h.orador_publico, h.redes_sociales,
+             b.nombre AS barrio_nombre,
+             co.nombre AS comuna_nombre
       FROM colaboradores c
       JOIN lideres l ON c.lider_cedula = l.cedula
       LEFT JOIN habilidades_colaborador h ON h.colaborador_id = c.id
+      LEFT JOIN barrios b ON c.barrio_id = b.id
+      LEFT JOIN comunas co ON b.comuna_id = co.id
     `;
     const params: string[] = [];
 
@@ -37,7 +41,7 @@ export async function POST(req: NextRequest) {
   const conn = await pool.getConnection();
   try {
     const body = await req.json();
-    const { cedula, nombre, apellidos, sexo, fecha_nacimiento, direccion, telefono, email, lider_cedula } = body;
+    const { cedula, nombre, apellidos, sexo, fecha_nacimiento, direccion, telefono, email, lider_cedula, barrio_id } = body;
 
     if (!cedula || !nombre || !apellidos || !sexo || !fecha_nacimiento || !lider_cedula) {
       return NextResponse.json({ error: 'Todos los campos requeridos deben estar completos' }, { status: 400 });
@@ -49,9 +53,11 @@ export async function POST(req: NextRequest) {
     await conn.beginTransaction();
 
     const [result] = await conn.query<ResultSetHeader>(
-      `INSERT INTO colaboradores (cedula, nombre, apellidos, sexo, fecha_nacimiento, direccion, telefono, email, lider_cedula)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [cedula.trim(), nombre.trim(), apellidos.trim(), sexo, fecha_nacimiento, (direccion || '').trim(), (telefono || '').trim(), (email || '').trim(), lider_cedula]
+      `INSERT INTO colaboradores (cedula, nombre, apellidos, sexo, fecha_nacimiento, direccion, telefono, email, lider_cedula, barrio_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [cedula.trim(), nombre.trim(), apellidos.trim(), sexo, fecha_nacimiento,
+       (direccion || '').trim(), (telefono || '').trim(), (email || '').trim(),
+       lider_cedula, barrio_id || null]
     );
 
     await conn.query(

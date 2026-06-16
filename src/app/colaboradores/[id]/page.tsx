@@ -5,14 +5,14 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import ColaboradorForm from '@/components/ColaboradorForm';
 import HabilidadesPanel from '@/components/HabilidadesPanel';
-import { Colaborador, Habilidades, Lider } from '@/types';
+import { Colaborador, Habilidades, Lider, Comuna } from '@/types';
 
 type ColabFormValues = {
   cedula: string; nombre: string; apellidos: string;
   sexo: 'M' | 'F'; fecha_nacimiento: string;
-  direccion: string; telefono: string; email: string; lider_cedula: string;
+  direccion: string; telefono: string; email: string;
+  lider_cedula: string; barrio_id: string;
 };
-
 
 export default function EditarColaboradorPage() {
   const router = useRouter();
@@ -21,6 +21,7 @@ export default function EditarColaboradorPage() {
 
   const [colaborador, setColaborador] = useState<Colaborador | null>(null);
   const [lideres, setLideres] = useState<Lider[]>([]);
+  const [comunas, setComunas] = useState<Comuna[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -30,16 +31,15 @@ export default function EditarColaboradorPage() {
     Promise.all([
       fetch(`/api/colaboradores/${id}`).then((r) => r.json()),
       fetch('/api/lideres').then((r) => r.json()),
+      fetch('/api/comunas').then((r) => r.json()),
     ])
-      .then(([col, lids]) => {
+      .then(([col, lids, coms]) => {
         setColaborador(col);
         setLideres(lids);
+        setComunas(coms);
         setLoading(false);
       })
-      .catch(() => {
-        setError('No se pudo cargar la información');
-        setLoading(false);
-      });
+      .catch(() => { setError('No se pudo cargar la información'); setLoading(false); });
   }, [id]);
 
   const handleSubmit = async (data: ColabFormValues) => {
@@ -49,14 +49,11 @@ export default function EditarColaboradorPage() {
     const res = await fetch(`/api/colaboradores/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ ...data, barrio_id: data.barrio_id ? Number(data.barrio_id) : null }),
     });
     const result = await res.json();
     setSaving(false);
-    if (!res.ok) {
-      setError(result.error || 'Error al actualizar');
-      return;
-    }
+    if (!res.ok) { setError(result.error || 'Error al actualizar'); return; }
     setSuccess(true);
     router.refresh();
   };
@@ -87,7 +84,10 @@ export default function EditarColaboradorPage() {
     redes_sociales: !!(colaborador as unknown as Record<string, unknown>).redes_sociales,
   };
 
-  const defaultValues: ColabFormValues = {
+  // La API devuelve comarca_id como campo plano desde el JOIN
+  const initialComunaId = (colaborador as unknown as Record<string, unknown>).comuna_id as number | null ?? null;
+
+  const defaultValues = {
     cedula:           colaborador.cedula,
     nombre:           colaborador.nombre,
     apellidos:        colaborador.apellidos,
@@ -97,6 +97,8 @@ export default function EditarColaboradorPage() {
     telefono:         colaborador.telefono,
     email:            colaborador.email ?? '',
     lider_cedula:     colaborador.lider_cedula,
+    barrio_id:        colaborador.barrio_id ?? null,
+    initial_comuna_id: initialComunaId,
   };
 
   return (
@@ -125,6 +127,7 @@ export default function EditarColaboradorPage() {
           <ColaboradorForm
             defaultValues={defaultValues}
             lideres={lideres}
+            comunas={comunas}
             onSubmit={handleSubmit}
             isLoading={saving}
           />

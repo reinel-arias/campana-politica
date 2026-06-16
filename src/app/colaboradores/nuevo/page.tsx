@@ -4,25 +4,29 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ColaboradorForm from '@/components/ColaboradorForm';
-import { Lider } from '@/types';
+import { Lider, Comuna } from '@/types';
 
 type ColabFormValues = {
   cedula: string; nombre: string; apellidos: string;
   sexo: 'M' | 'F'; fecha_nacimiento: string;
-  direccion: string; telefono: string; email: string; lider_cedula: string;
+  direccion: string; telefono: string; email: string;
+  lider_cedula: string; barrio_id: string;
 };
 
 export default function NuevoColaboradorPage() {
   const router = useRouter();
   const [lideres, setLideres] = useState<Lider[]>([]);
+  const [comunas, setComunas] = useState<Comuna[]>([]);
   const [error, setError] = useState('');
-  const [loadingLideres, setLoadingLideres] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/lideres')
-      .then((r) => r.json())
-      .then((data) => { setLideres(data); setLoadingLideres(false); })
-      .catch(() => { setError('No se pudieron cargar los líderes'); setLoadingLideres(false); });
+    Promise.all([
+      fetch('/api/lideres').then((r) => r.json()),
+      fetch('/api/comunas').then((r) => r.json()),
+    ])
+      .then(([lids, coms]) => { setLideres(lids); setComunas(coms); setLoading(false); })
+      .catch(() => { setError('No se pudieron cargar los datos'); setLoading(false); });
   }, []);
 
   const handleSubmit = async (data: ColabFormValues) => {
@@ -30,13 +34,10 @@ export default function NuevoColaboradorPage() {
     const res = await fetch('/api/colaboradores', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ ...data, barrio_id: data.barrio_id ? Number(data.barrio_id) : null }),
     });
     const result = await res.json();
-    if (!res.ok) {
-      setError(result.error || 'Error al crear colaborador');
-      return;
-    }
+    if (!res.ok) { setError(result.error || 'Error al crear colaborador'); return; }
     router.push(`/colaboradores/${result.id}`);
     router.refresh();
   };
@@ -54,14 +55,12 @@ export default function NuevoColaboradorPage() {
         {error && (
           <div className="mb-5 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">{error}</div>
         )}
-        {loadingLideres ? (
+        {loading ? (
           <div className="space-y-3">
-            {[1,2,3,4].map(i => (
-              <div key={i} className="h-10 bg-slate-100 rounded animate-pulse" />
-            ))}
+            {[1,2,3,4].map(i => <div key={i} className="h-10 bg-slate-100 rounded animate-pulse" />)}
           </div>
         ) : (
-          <ColaboradorForm lideres={lideres} onSubmit={handleSubmit} />
+          <ColaboradorForm lideres={lideres} comunas={comunas} onSubmit={handleSubmit} />
         )}
       </div>
     </div>
