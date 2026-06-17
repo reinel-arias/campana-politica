@@ -3,12 +3,16 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Colaborador, Lider } from '@/types';
+import { Colaborador, Lider, Comuna, Barrio } from '@/types';
 
 interface Props {
   colaboradores: Colaborador[];
   lideres: Lider[];
+  comunas: Comuna[];
+  barrios: Barrio[];
   selectedLider: string;
+  selectedComuna: string;
+  selectedBarrio: string;
 }
 
 type HabKey = 'vehiculo' | 'perifoneo' | 'orador_publico' | 'redes_sociales';
@@ -35,16 +39,39 @@ function getHab(c: Colaborador, key: HabKey): boolean {
   return !!(c as unknown as Record<string, unknown>)[key];
 }
 
-export default function ColaboradoresClient({ colaboradores, lideres, selectedLider }: Props) {
+export default function ColaboradoresClient({ colaboradores, lideres, comunas, barrios, selectedLider, selectedComuna, selectedBarrio }: Props) {
   const router = useRouter();
   const [liderFiltro, setLiderFiltro] = useState(selectedLider);
+  const [comunaFiltro, setComunaFiltro] = useState(selectedComuna);
+  const [barrioFiltro, setBarrioFiltro] = useState(selectedBarrio);
   const [habFiltros, setHabFiltros] = useState<Set<HabKey>>(new Set());
   const [deleting, setDeleting] = useState<number | null>(null);
 
+  const navigate = (updates: Record<string, string>) => {
+    const params = new URLSearchParams();
+    if (liderFiltro) params.set('lider_cedula', liderFiltro);
+    if (comunaFiltro) params.set('comuna_id', comunaFiltro);
+    if (barrioFiltro) params.set('barrio_id', barrioFiltro);
+    for (const [key, val] of Object.entries(updates)) {
+      if (val) params.set(key, val); else params.delete(key);
+    }
+    router.push(`/colaboradores${params.toString() ? '?' + params.toString() : ''}`);
+  };
+
   const handleLiderFiltro = (val: string) => {
     setLiderFiltro(val);
-    const params = val ? `?lider_cedula=${val}` : '';
-    router.push(`/colaboradores${params}`);
+    navigate({ lider_cedula: val });
+  };
+
+  const handleComunaFiltro = (val: string) => {
+    setComunaFiltro(val);
+    setBarrioFiltro('');
+    navigate({ comuna_id: val, barrio_id: '' });
+  };
+
+  const handleBarrioFiltro = (val: string) => {
+    setBarrioFiltro(val);
+    navigate({ barrio_id: val });
   };
 
   const toggleHab = (key: HabKey) => {
@@ -57,10 +84,17 @@ export default function ColaboradoresClient({ colaboradores, lideres, selectedLi
 
   const limpiarFiltros = () => {
     setHabFiltros(new Set());
-    handleLiderFiltro('');
+    setLiderFiltro('');
+    setComunaFiltro('');
+    setBarrioFiltro('');
+    router.push('/colaboradores');
   };
 
-  const hayFiltros = liderFiltro || habFiltros.size > 0;
+  const barriosDeFiltro = comunaFiltro
+    ? barrios.filter((b) => b.comuna_id.toString() === comunaFiltro)
+    : barrios;
+
+  const hayFiltros = liderFiltro || comunaFiltro || barrioFiltro || habFiltros.size > 0;
 
   const filtrados = habFiltros.size === 0
     ? colaboradores
@@ -80,28 +114,61 @@ export default function ColaboradoresClient({ colaboradores, lideres, selectedLi
   return (
     <>
       {/* Barra de filtros */}
-      <div className="mb-5 bg-white border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center flex-wrap">
-        {/* Filtro por líder */}
-        <div className="flex items-center gap-2">
-          <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap">Líder</label>
-          <select
-            value={liderFiltro}
-            onChange={(e) => handleLiderFiltro(e.target.value)}
-            className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white min-w-[190px]"
-          >
-            <option value="">Todos</option>
-            {lideres.map((l) => (
-              <option key={l.cedula} value={l.cedula}>
-                {l.apellidos}, {l.nombre}
-              </option>
-            ))}
-          </select>
+      <div className="mb-5 bg-white border border-slate-200 rounded-xl p-4 flex flex-col gap-3">
+        <div className="flex flex-wrap gap-4 items-center">
+          {/* Filtro por líder */}
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap">Líder</label>
+            <select
+              value={liderFiltro}
+              onChange={(e) => handleLiderFiltro(e.target.value)}
+              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white min-w-[190px]"
+            >
+              <option value="">Todos</option>
+              {lideres.map((l) => (
+                <option key={l.cedula} value={l.cedula}>
+                  {l.apellidos}, {l.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="hidden sm:block w-px h-6 bg-slate-200" />
+
+          {/* Filtro por comuna */}
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap">Comuna</label>
+            <select
+              value={comunaFiltro}
+              onChange={(e) => handleComunaFiltro(e.target.value)}
+              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white min-w-[160px]"
+            >
+              <option value="">Todas</option>
+              {comunas.map((c) => (
+                <option key={c.id} value={c.id}>{c.nombre}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Filtro por barrio */}
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap">Barrio</label>
+            <select
+              value={barrioFiltro}
+              onChange={(e) => handleBarrioFiltro(e.target.value)}
+              disabled={barriosDeFiltro.length === 0}
+              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white min-w-[160px] disabled:opacity-50"
+            >
+              <option value="">Todos</option>
+              {barriosDeFiltro.map((b) => (
+                <option key={b.id} value={b.id}>{b.nombre}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        <div className="hidden sm:block w-px h-6 bg-slate-200" />
-
-        {/* Filtro por habilidades */}
-        <div className="flex items-center gap-3 flex-wrap">
+        {/* Fila de habilidades + limpiar */}
+        <div className="border-t border-slate-100 pt-3 flex items-center gap-3 flex-wrap">
           <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Habilidades</span>
           {HABILIDADES.map(({ key, label }) => (
             <label
@@ -121,16 +188,15 @@ export default function ColaboradoresClient({ colaboradores, lideres, selectedLi
               {label}
             </label>
           ))}
+          {hayFiltros && (
+            <button
+              onClick={limpiarFiltros}
+              className="ml-auto text-xs text-slate-400 hover:text-slate-600 underline whitespace-nowrap"
+            >
+              Limpiar filtros
+            </button>
+          )}
         </div>
-
-        {hayFiltros && (
-          <button
-            onClick={limpiarFiltros}
-            className="ml-auto text-xs text-slate-400 hover:text-slate-600 underline whitespace-nowrap"
-          >
-            Limpiar filtros
-          </button>
-        )}
       </div>
 
       {/* Conteo */}

@@ -1,24 +1,44 @@
 import Link from 'next/link';
 import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
-import { Colaborador, Lider } from '@/types';
+import { Colaborador, Lider, Comuna, Barrio } from '@/types';
 import ColaboradoresClient from './ColaboradoresClient';
 
-async function getColaboradores(liderCedula?: string): Promise<Colaborador[]> {
-  let query = `
+async function getColaboradores(
+  liderCedula?: string,
+  barrioId?: string,
+  comunaId?: string,
+): Promise<Colaborador[]> {
+  const conditions: string[] = [];
+  const params: (string | number)[] = [];
+
+  if (liderCedula) {
+    conditions.push('c.lider_cedula = ?');
+    params.push(liderCedula);
+  }
+  if (barrioId) {
+    conditions.push('c.barrio_id = ?');
+    params.push(Number(barrioId));
+  } else if (comunaId) {
+    conditions.push('b.comuna_id = ?');
+    params.push(Number(comunaId));
+  }
+
+  const where = conditions.length ? ' WHERE ' + conditions.join(' AND ') : '';
+
+  const query = `
     SELECT c.*,
            l.nombre AS lider_nombre, l.apellidos AS lider_apellidos,
-           h.vehiculo, h.perifoneo, h.orador_publico, h.redes_sociales
+           h.vehiculo, h.perifoneo, h.orador_publico, h.redes_sociales,
+           b.nombre AS barrio_nombre, co.nombre AS comuna_nombre
     FROM colaboradores c
     JOIN lideres l ON c.lider_cedula = l.cedula
     LEFT JOIN habilidades_colaborador h ON h.colaborador_id = c.id
+    LEFT JOIN barrios b ON c.barrio_id = b.id
+    LEFT JOIN comunas co ON b.comuna_id = co.id
+    ${where}
+    ORDER BY c.apellidos, c.nombre
   `;
-  const params: string[] = [];
-  if (liderCedula) {
-    query += ' WHERE c.lider_cedula = ?';
-    params.push(liderCedula);
-  }
-  query += ' ORDER BY c.apellidos, c.nombre';
   const [rows] = await pool.query<RowDataPacket[]>(query, params);
   return rows as Colaborador[];
 }
@@ -28,19 +48,35 @@ async function getLideres(): Promise<Lider[]> {
   return rows as Lider[];
 }
 
+async function getComunas(): Promise<Comuna[]> {
+  const [rows] = await pool.query<RowDataPacket[]>('SELECT id, nombre FROM comunas ORDER BY nombre');
+  return rows as Comuna[];
+}
+
+async function getBarrios(): Promise<Barrio[]> {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    'SELECT id, nombre, comuna_id FROM barrios ORDER BY nombre',
+  );
+  return rows as Barrio[];
+}
+
 export default async function ColaboradoresPage({
   searchParams,
 }: {
-  searchParams: { lider_cedula?: string };
+  searchParams: { lider_cedula?: string; barrio_id?: string; comuna_id?: string };
 }) {
   let colaboradores: Colaborador[] = [];
   let lideres: Lider[] = [];
+  let comunas: Comuna[] = [];
+  let barrios: Barrio[] = [];
   let dbError = false;
 
   try {
-    [colaboradores, lideres] = await Promise.all([
-      getColaboradores(searchParams.lider_cedula),
+    [colaboradores, lideres, comunas, barrios] = await Promise.all([
+      getColaboradores(searchParams.lider_cedula, searchParams.barrio_id, searchParams.comuna_id),
       getLideres(),
+      getComunas(),
+      getBarrios(),
     ]);
   } catch {
     dbError = true;
@@ -70,7 +106,11 @@ export default async function ColaboradoresPage({
       <ColaboradoresClient
         colaboradores={colaboradores}
         lideres={lideres}
+        comunas={comunas}
+        barrios={barrios}
         selectedLider={searchParams.lider_cedula || ''}
+        selectedComuna={searchParams.comuna_id || ''}
+        selectedBarrio={searchParams.barrio_id || ''}
       />
     </div>
   );
