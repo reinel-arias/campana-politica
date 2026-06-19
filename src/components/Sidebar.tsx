@@ -10,11 +10,15 @@ const navItems = [
   { href: '/barrios',        label: 'Barrios',        icon: '⌖' },
 ];
 
-export default function Sidebar() {
+interface Props {
+  onLinkClick?: () => void;
+}
+
+export default function Sidebar({ onLinkClick }: Props) {
   const pathname = usePathname();
 
   return (
-    <aside className="w-60 min-h-screen bg-slate-900 flex flex-col">
+    <aside className="w-60 h-full bg-slate-900 flex flex-col">
       <div className="px-6 py-6 border-b border-slate-700">
         <h1 className="text-white font-bold text-lg leading-tight">Campaña</h1>
         <p className="text-slate-400 text-xs mt-1">Gestión de Colaboradores</p>
@@ -29,6 +33,7 @@ export default function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={onLinkClick}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                 isActive
                   ? 'bg-blue-600 text-white'
