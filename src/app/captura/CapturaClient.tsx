@@ -12,6 +12,19 @@ type FormValues = {
   lider_cedula: string; barrio_id: string;
 };
 
+type HabKey = 'vehiculo' | 'perifoneo' | 'orador_publico' | 'redes_sociales';
+
+const HABILIDADES: { key: HabKey; label: string }[] = [
+  { key: 'vehiculo',       label: 'Vehículo propio' },
+  { key: 'perifoneo',      label: 'Perifoneo' },
+  { key: 'orador_publico', label: 'Orador público' },
+  { key: 'redes_sociales', label: 'Redes sociales' },
+];
+
+const HAB_INICIAL: Record<HabKey, boolean> = {
+  vehiculo: false, perifoneo: false, orador_publico: false, redes_sociales: false,
+};
+
 interface Props {
   lideres: Lider[];
   comunas: Comuna[];
@@ -19,14 +32,19 @@ interface Props {
 
 export default function CapturaClient({ lideres, comunas }: Props) {
   const router = useRouter();
+  const [habilidades, setHabilidades] = useState<Record<HabKey, boolean>>(HAB_INICIAL);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
-  const [formKey, setFormKey] = useState(0); // fuerza reset del form
+  const [formKey, setFormKey] = useState(0);
+
+  const toggleHab = (key: HabKey) =>
+    setHabilidades((prev) => ({ ...prev, [key]: !prev[key] }));
 
   const handleSubmit = async (data: FormValues) => {
     setError('');
     setSuccess(false);
 
+    // 1. Crear colaborador
     const res = await fetch('/api/colaboradores', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -42,8 +60,17 @@ export default function CapturaClient({ lideres, comunas }: Props) {
       return;
     }
 
+    // 2. Guardar habilidades para el nuevo colaborador
+    await fetch(`/api/colaboradores/${result.id}/habilidades`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(habilidades),
+    });
+
+    // 3. Reset
     setSuccess(true);
-    setFormKey((k) => k + 1); // reset form
+    setHabilidades(HAB_INICIAL);
+    setFormKey((k) => k + 1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -74,10 +101,10 @@ export default function CapturaClient({ lideres, comunas }: Props) {
       </header>
 
       {/* Contenido */}
-      <div className="max-w-2xl mx-auto px-4 py-8">
+      <div className="max-w-2xl mx-auto px-4 py-8 space-y-5">
         {/* Mensaje de éxito */}
         {success && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-start gap-3">
+          <div className="p-4 bg-green-50 border border-green-200 rounded-xl flex items-start gap-3">
             <svg className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
@@ -90,19 +117,48 @@ export default function CapturaClient({ lideres, comunas }: Props) {
 
         {/* Mensaje de error */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+          <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
             {error}
           </div>
         )}
 
+        {/* Datos personales */}
         <div className="bg-white rounded-xl border border-slate-200 p-6">
-          <h2 className="text-base font-semibold text-slate-800 mb-5">Nuevo Colaborador</h2>
+          <h2 className="text-base font-semibold text-slate-800 mb-5">Datos del Colaborador</h2>
           <ColaboradorForm
             key={formKey}
             lideres={lideres}
             comunas={comunas}
             onSubmit={handleSubmit}
           />
+        </div>
+
+        {/* Habilidades */}
+        <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <h2 className="text-base font-semibold text-slate-800 mb-4">Habilidades</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {HABILIDADES.map(({ key, label }) => (
+              <label
+                key={key}
+                className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors select-none ${
+                  habilidades[key]
+                    ? 'bg-blue-50 border-blue-300 text-blue-800'
+                    : 'bg-slate-50 border-slate-200 text-slate-600 hover:border-slate-300'
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={habilidades[key]}
+                  onChange={() => toggleHab(key)}
+                  className="w-4 h-4 accent-blue-600"
+                />
+                <span className="text-sm font-medium">{label}</span>
+              </label>
+            ))}
+          </div>
+          <p className="text-xs text-slate-400 mt-3">
+            Las habilidades se guardan automáticamente al hacer clic en <strong>Guardar Colaborador</strong>.
+          </p>
         </div>
       </div>
     </div>
