@@ -57,6 +57,28 @@ export interface LiderFormData {
   telefono: string;
 }
 
+export interface Gestion {
+  id: number;
+  colaborador_id: number;
+  descripcion: string;
+  fecha_limite: string;       // YYYY-MM-DD
+  gestionado: boolean;
+  fecha_ejecucion: string | null;
+  creado_en?: string;
+}
+
+export interface GestionResumen {
+  colaborador_id: number;
+  colaborador_nombre: string;
+  colaborador_apellidos: string;
+  colaborador_cedula: string;
+  barrio_nombre: string | null;
+  total: number;
+  pendientes: number;
+  vencidas: number;
+  proxima_fecha: string | null;
+}
+
 export interface ColaboradorFormData {
   cedula: string;
   nombre: string;

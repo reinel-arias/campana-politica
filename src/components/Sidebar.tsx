@@ -8,6 +8,7 @@ const navItems = [
   { href: '/lideres',        label: 'Líderes',        icon: '★' },
   { href: '/colaboradores',  label: 'Colaboradores',  icon: '⊹' },
   { href: '/barrios',        label: 'Barrios',        icon: '⌖' },
+  { href: '/gestion',        label: 'Gestión',        icon: '✓' },
 ];
 
 interface Props {
