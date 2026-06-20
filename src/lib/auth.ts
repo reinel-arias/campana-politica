@@ -4,8 +4,8 @@ import path from 'path';
 
 const SECRET = process.env.AUTH_SECRET ?? 'campana-key-2024';
 
-export function readUsers(): Map<string, string> {
-  const filePath = path.join(process.cwd(), 'users.txt');
+export function readUsers(filename = 'users.txt'): Map<string, string> {
+  const filePath = path.join(process.cwd(), filename);
   const lines = fs.readFileSync(filePath, 'utf-8').split('\n');
   const map = new Map<string, string>();
   for (const line of lines) {
@@ -18,8 +18,8 @@ export function readUsers(): Map<string, string> {
   return map;
 }
 
-export function verifyCredentials(username: string, password: string): boolean {
-  return readUsers().get(username) === password;
+export function verifyCredentials(username: string, password: string, filename = 'users.txt'): boolean {
+  return readUsers(filename).get(username) === password;
 }
 
 function hmacHex(username: string): string {

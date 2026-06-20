@@ -4,7 +4,7 @@ import { verifyCredentials, createToken } from '@/lib/auth';
 export async function POST(req: NextRequest) {
   const { username, password } = await req.json();
 
-  if (!username || !password || !verifyCredentials(username, password)) {
+  if (!username || !password || !verifyCredentials(username, password, 'capturadores.txt')) {
     return NextResponse.json({ error: 'Credenciales incorrectas' }, { status: 401 });
   }
 
