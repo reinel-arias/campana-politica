@@ -13,8 +13,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     if (window.innerWidth < 1024) setOpen(false);
   }, []);
 
-  // La pantalla de login se muestra sin shell
-  if (pathname === '/login') return <>{children}</>;
+  // Login principal y todo el portal de captura se muestran sin shell
+  if (pathname === '/login' || pathname.startsWith('/captura')) return <>{children}</>;
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });

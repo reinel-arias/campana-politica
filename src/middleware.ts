@@ -4,7 +4,6 @@ const SECRET = process.env.AUTH_SECRET ?? 'campana-key-2024';
 
 async function verifySession(token: string): Promise<boolean> {
   try {
-    // base64url → string
     const raw = atob(token.replace(/-/g, '+').replace(/_/g, '/'));
     const i = raw.lastIndexOf(':');
     const username = raw.slice(0, i);
@@ -32,16 +31,29 @@ async function verifySession(token: string): Promise<boolean> {
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Rutas públicas — no requieren sesión
-  if (pathname.startsWith('/login') || pathname.startsWith('/api/auth')) {
+  // ── Portal de captura ────────────────────────────────────────────────────
+  if (pathname.startsWith('/captura')) {
+    if (
+      pathname.startsWith('/captura/login') ||
+      pathname.startsWith('/api/captura/auth')
+    ) {
+      return NextResponse.next();
+    }
+    const token = req.cookies.get('captura-session')?.value;
+    if (!token || !(await verifySession(token))) {
+      return NextResponse.redirect(new URL('/captura/login', req.url));
+    }
     return NextResponse.next();
   }
 
+  // ── App principal ────────────────────────────────────────────────────────
+  if (pathname.startsWith('/login') || pathname.startsWith('/api/auth')) {
+    return NextResponse.next();
+  }
   const token = req.cookies.get('session')?.value;
   if (!token || !(await verifySession(token))) {
     return NextResponse.redirect(new URL('/login', req.url));
   }
-
   return NextResponse.next();
 }
 
