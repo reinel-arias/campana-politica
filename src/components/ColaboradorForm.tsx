@@ -159,22 +159,28 @@ export default function ColaboradorForm({ defaultValues, lideres, comunas, onSub
         </Field>
 
         <Field label="Barrio" error={errors.barrio_id?.message}>
-          <select
-            {...register('barrio_id')}
-            disabled={!selectedComunaId || loadingBarrios}
-            className={inputCls(false)}
-          >
-            <option value="">
-              {!selectedComunaId
-                ? 'Primero selecciona una comuna'
-                : loadingBarrios
-                  ? 'Cargando barrios...'
-                  : 'Sin barrio'}
-            </option>
-            {barrios.map((b) => (
-              <option key={b.id} value={b.id}>{b.nombre}</option>
-            ))}
-          </select>
+          <Controller
+            name="barrio_id"
+            control={control}
+            render={({ field }) => (
+              <select
+                {...field}
+                disabled={!selectedComunaId || loadingBarrios}
+                className={inputCls(false)}
+              >
+                <option value="">
+                  {!selectedComunaId
+                    ? 'Primero selecciona una comuna'
+                    : loadingBarrios
+                      ? 'Cargando barrios...'
+                      : 'Sin barrio'}
+                </option>
+                {barrios.map((b) => (
+                  <option key={b.id} value={String(b.id)}>{b.nombre}</option>
+                ))}
+              </select>
+            )}
+          />
         </Field>
       </div>
 

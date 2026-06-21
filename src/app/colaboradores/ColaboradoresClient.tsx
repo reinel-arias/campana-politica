@@ -222,12 +222,17 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold">Nombre</th>
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold hidden md:table-cell">Sexo</th>
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold hidden lg:table-cell">Edad</th>
-                <th className="text-right px-5 py-3 text-slate-600 font-semibold">Acciones</th>
+                <th className="text-left px-5 py-3 text-slate-600 font-semibold hidden lg:table-cell">Barrio</th>
+                <th className="px-5 py-3"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filtrados.map((c) => (
-                <tr key={c.id} className="hover:bg-slate-50 transition-colors">
+                <tr
+                  key={c.id}
+                  onClick={() => router.push(`/colaboradores/${c.id}`)}
+                  className="hover:bg-blue-50 cursor-pointer transition-colors"
+                >
                   <td className="px-5 py-3.5 text-slate-500 font-mono text-xs">{c.cedula}</td>
                   <td className="px-5 py-3.5">
                     <p className="font-medium text-slate-800">{c.apellidos}, {c.nombre}</p>
@@ -243,22 +248,25 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
                   <td className="px-5 py-3.5 text-slate-500 text-xs hidden lg:table-cell">
                     {calcularEdad(c.fecha_nacimiento)} años
                   </td>
+                  <td className="px-5 py-3.5 text-slate-500 text-xs hidden lg:table-cell">
+                    {c.barrio_nombre ?? '—'}
+                  </td>
                   <td className="px-5 py-3.5 text-right">
-                    <div className="flex justify-end gap-2">
-                      <Link
-                        href={`/colaboradores/${c.id}`}
-                        className="px-3 py-1 text-xs font-medium text-slate-600 bg-slate-100 rounded-md hover:bg-slate-200 transition-colors"
-                      >
-                        Ver / Editar
-                      </Link>
-                      <button
-                        onClick={() => handleDelete(c.id, `${c.nombre} ${c.apellidos}`)}
-                        disabled={deleting === c.id}
-                        className="px-3 py-1 text-xs font-medium text-red-600 bg-red-50 rounded-md hover:bg-red-100 disabled:opacity-50 transition-colors"
-                      >
-                        {deleting === c.id ? '...' : 'Eliminar'}
-                      </button>
-                    </div>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleDelete(c.id, `${c.nombre} ${c.apellidos}`); }}
+                      disabled={deleting === c.id}
+                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md disabled:opacity-50 transition-colors"
+                      title="Eliminar"
+                    >
+                      {deleting === c.id
+                        ? <span className="text-xs">...</span>
+                        : (
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        )
+                      }
+                    </button>
                   </td>
                 </tr>
               ))}
