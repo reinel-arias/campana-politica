@@ -4,7 +4,7 @@ import Link from 'next/link';
 import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
 import { Lider } from '@/types';
-import DeleteLiderButton from './DeleteLiderButton';
+import LideresTable from './LideresTable';
 
 async function getLideres(): Promise<Lider[]> {
   const [rows] = await pool.query<RowDataPacket[]>(`
@@ -56,50 +56,7 @@ export default async function LideresPage() {
           </Link>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-slate-100 bg-slate-50">
-                <th className="text-left px-5 py-3 text-slate-600 font-semibold">Cédula</th>
-                <th className="text-left px-5 py-3 text-slate-600 font-semibold">Nombre</th>
-                <th className="text-left px-5 py-3 text-slate-600 font-semibold hidden sm:table-cell">Teléfono</th>
-                <th className="text-center px-5 py-3 text-slate-600 font-semibold">Colaboradores</th>
-                <th className="text-right px-5 py-3 text-slate-600 font-semibold">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {lideres.map((lider) => (
-                <tr key={lider.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-5 py-3.5 text-slate-500 font-mono text-xs">{lider.cedula}</td>
-                  <td className="px-5 py-3.5">
-                    <p className="font-medium text-slate-800">{lider.apellidos}, {lider.nombre}</p>
-                    {lider.direccion && <p className="text-xs text-slate-400 mt-0.5">{lider.direccion}</p>}
-                  </td>
-                  <td className="px-5 py-3.5 text-slate-500 hidden sm:table-cell">{lider.telefono}</td>
-                  <td className="px-5 py-3.5 text-center">
-                    <Link
-                      href={`/colaboradores?lider_cedula=${lider.cedula}`}
-                      className="inline-flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-700 text-xs font-bold rounded-full hover:bg-blue-200 transition-colors"
-                    >
-                      {lider.total_colaboradores ?? 0}
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3.5 text-right">
-                    <div className="flex justify-end gap-2">
-                      <Link
-                        href={`/lideres/${lider.id}`}
-                        className="px-3 py-1 text-xs font-medium text-slate-600 bg-slate-100 rounded-md hover:bg-slate-200 transition-colors"
-                      >
-                        Editar
-                      </Link>
-                      <DeleteLiderButton id={lider.id} nombre={`${lider.nombre} ${lider.apellidos}`} />
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <LideresTable lideres={lideres} />
       )}
     </div>
   );
