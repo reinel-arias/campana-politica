@@ -104,7 +104,7 @@ export default function ComunasPanel({ initialComunas, onComunaSelect, selectedC
         ) : comunas.map((c) => (
           <div
             key={c.id}
-            className={`flex items-center gap-2 px-5 py-3 hover:bg-slate-50 cursor-pointer transition-colors ${
+            className={`flex items-center gap-2 px-5 py-3 hover:bg-slate-50 cursor-pointer transition-colors group ${
               selectedComunaId === c.id ? 'bg-blue-50 border-l-2 border-blue-500' : ''
             }`}
             onClick={() => onComunaSelect(selectedComunaId === c.id ? null : c.id)}
