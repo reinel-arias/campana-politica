@@ -21,7 +21,8 @@ async function getResumen(): Promise<GestionResumen[]> {
     JOIN colaboradores c ON g.colaborador_id = c.id
     LEFT JOIN barrios b ON c.barrio_id = b.id
     GROUP BY c.id, c.nombre, c.apellidos, c.cedula, b.nombre
-    ORDER BY proxima_fecha IS NULL, proxima_fecha ASC
+    ORDER BY MIN(CASE WHEN g.gestionado = 0 THEN g.fecha_limite END) IS NULL,
+             MIN(CASE WHEN g.gestionado = 0 THEN g.fecha_limite END) ASC
   `);
   return rows as GestionResumen[];
 }
