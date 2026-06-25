@@ -3,19 +3,17 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Colaborador, Lider, Comuna, Barrio, Zona, PuestoVotacion } from '@/types';
+import { Colaborador, Lider, Comuna, Barrio, PuestoVotacion } from '@/types';
 
 interface Props {
   colaboradores: Colaborador[];
   lideres: Lider[];
   comunas: Comuna[];
   barrios: Barrio[];
-  zonas: Zona[];
   puestos: PuestoVotacion[];
   selectedLider: string;
   selectedComuna: string;
   selectedBarrio: string;
-  selectedZona: string;
   selectedPuesto: string;
 }
 
@@ -42,12 +40,11 @@ function getHab(c: Colaborador, key: HabKey): boolean {
   return !!(c as unknown as Record<string, unknown>)[key];
 }
 
-export default function ColaboradoresClient({ colaboradores, lideres, comunas, barrios, zonas, puestos, selectedLider, selectedComuna, selectedBarrio, selectedZona, selectedPuesto }: Props) {
+export default function ColaboradoresClient({ colaboradores, lideres, comunas, barrios, puestos, selectedLider, selectedComuna, selectedBarrio, selectedPuesto }: Props) {
   const router = useRouter();
   const [liderFiltro, setLiderFiltro] = useState(selectedLider);
   const [comunaFiltro, setComunaFiltro] = useState(selectedComuna);
   const [barrioFiltro, setBarrioFiltro] = useState(selectedBarrio);
-  const [zonaFiltro, setZonaFiltro] = useState(selectedZona);
   const [puestoFiltro, setPuestoFiltro] = useState(selectedPuesto);
   const [habFiltros, setHabFiltros] = useState<Set<HabKey>>(new Set());
   const [deleting, setDeleting] = useState<number | null>(null);
@@ -57,7 +54,6 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
     if (liderFiltro) params.set('lider_cedula', liderFiltro);
     if (comunaFiltro) params.set('comuna_id', comunaFiltro);
     if (barrioFiltro) params.set('barrio_id', barrioFiltro);
-    if (zonaFiltro) params.set('zona_id', zonaFiltro);
     if (puestoFiltro) params.set('puesto_id', puestoFiltro);
     for (const [key, val] of Object.entries(updates)) {
       if (val) params.set(key, val); else params.delete(key);
@@ -81,12 +77,6 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
     navigate({ barrio_id: val });
   };
 
-  const handleZonaFiltro = (val: string) => {
-    setZonaFiltro(val);
-    setPuestoFiltro('');
-    navigate({ zona_id: val, puesto_id: '' });
-  };
-
   const handlePuestoFiltro = (val: string) => {
     setPuestoFiltro(val);
     navigate({ puesto_id: val });
@@ -105,7 +95,6 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
     setLiderFiltro('');
     setComunaFiltro('');
     setBarrioFiltro('');
-    setZonaFiltro('');
     setPuestoFiltro('');
     router.push('/colaboradores');
   };
@@ -114,11 +103,7 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
     ? barrios.filter((b) => b.comuna_id.toString() === comunaFiltro)
     : barrios;
 
-  const puestosDeFiltro = zonaFiltro
-    ? puestos.filter((p) => p.zona_id.toString() === zonaFiltro)
-    : puestos;
-
-  const hayFiltros = liderFiltro || comunaFiltro || barrioFiltro || zonaFiltro || puestoFiltro || habFiltros.size > 0;
+  const hayFiltros = liderFiltro || comunaFiltro || barrioFiltro || puestoFiltro || habFiltros.size > 0;
 
   const filtrados = habFiltros.size === 0
     ? colaboradores
@@ -192,32 +177,16 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
 
           <div className="hidden sm:block w-px h-6 bg-slate-200" />
 
-          {/* Filtro por zona */}
-          <div className="flex items-center gap-2">
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap">Zona</label>
-            <select
-              value={zonaFiltro}
-              onChange={(e) => handleZonaFiltro(e.target.value)}
-              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-            >
-              <option value="">Todas</option>
-              {zonas.map((z) => (
-                <option key={z.id} value={z.id}>Zona {z.codigo}</option>
-              ))}
-            </select>
-          </div>
-
           {/* Filtro por puesto */}
           <div className="flex items-center gap-2">
             <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap">Puesto</label>
             <select
               value={puestoFiltro}
               onChange={(e) => handlePuestoFiltro(e.target.value)}
-              disabled={puestosDeFiltro.length === 0}
-              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white min-w-[200px] disabled:opacity-50"
+              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white min-w-[200px]"
             >
               <option value="">Todos</option>
-              {puestosDeFiltro.map((p) => (
+              {puestos.map((p) => (
                 <option key={p.id} value={p.id}>{p.nombre}</option>
               ))}
             </select>
