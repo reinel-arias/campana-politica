@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS puestos_votacion (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 ALTER TABLE colaboradores
-  ADD COLUMN IF NOT EXISTS puesto_votacion_id INT NULL,
+  ADD COLUMN puesto_votacion_id INT NULL,
   ADD CONSTRAINT fk_colab_puesto
     FOREIGN KEY (puesto_votacion_id) REFERENCES puestos_votacion (id)
     ON DELETE SET NULL;
