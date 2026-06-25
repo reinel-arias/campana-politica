@@ -6,87 +6,109 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { ColaboradorFormData, Lider, Comuna, Barrio } from '@/types';
+import { ColaboradorFormData, Lider, Comuna, Barrio, Zona, PuestoVotacion } from '@/types';
 import { registerLocale } from 'react-datepicker';
 import { es } from 'date-fns/locale';
 
 registerLocale('es', es);
 
 const schema = z.object({
-  cedula:           z.string().min(5, 'Mínimo 5 caracteres').max(20),
-  nombre:           z.string().min(2, 'Mínimo 2 caracteres').max(100),
-  apellidos:        z.string().min(2, 'Mínimo 2 caracteres').max(100),
-  sexo:             z.enum(['M', 'F']),
-  fecha_nacimiento: z.string().min(1, 'La fecha es requerida'),
-  direccion:        z.string().max(255),
-  telefono:         z.string().max(20),
-  email:            z.string().email('Email inválido').max(255).or(z.literal('')),
-  lider_cedula:     z.string().min(1, 'Selecciona un líder'),
-  barrio_id:        z.string(),
+  cedula:              z.string().min(5, 'Mínimo 5 caracteres').max(20),
+  nombre:              z.string().min(2, 'Mínimo 2 caracteres').max(100),
+  apellidos:           z.string().min(2, 'Mínimo 2 caracteres').max(100),
+  sexo:                z.enum(['M', 'F']),
+  fecha_nacimiento:    z.string().min(1, 'La fecha es requerida'),
+  direccion:           z.string().max(255),
+  telefono:            z.string().max(20),
+  email:               z.string().email('Email inválido').max(255).or(z.literal('')),
+  lider_cedula:        z.string().min(1, 'Selecciona un líder'),
+  barrio_id:           z.string(),
+  puesto_votacion_id:  z.string(),
 });
 
 type FormValues = z.infer<typeof schema>;
 
 interface Props {
-  defaultValues?: Partial<ColaboradorFormData> & { barrio_id?: number | null; initial_comuna_id?: number | null };
+  defaultValues?: Partial<ColaboradorFormData> & {
+    barrio_id?: number | null;
+    initial_comuna_id?: number | null;
+    puesto_votacion_id?: number | null;
+    initial_zona_id?: number | null;
+  };
   lideres: Lider[];
   comunas: Comuna[];
+  zonas: Zona[];
   onSubmit: (data: FormValues) => Promise<void>;
   isLoading?: boolean;
 }
 
-export default function ColaboradorForm({ defaultValues, lideres, comunas, onSubmit, isLoading }: Props) {
+export default function ColaboradorForm({ defaultValues, lideres, comunas, zonas, onSubmit, isLoading }: Props) {
   const [selectedComunaId, setSelectedComunaId] = useState<string>(
     defaultValues?.initial_comuna_id?.toString() ?? ''
   );
   const [barrios, setBarrios] = useState<Barrio[]>([]);
   const [loadingBarrios, setLoadingBarrios] = useState(false);
 
+  const [selectedZonaId, setSelectedZonaId] = useState<string>(
+    defaultValues?.initial_zona_id?.toString() ?? ''
+  );
+  const [puestos, setPuestos] = useState<PuestoVotacion[]>([]);
+  const [loadingPuestos, setLoadingPuestos] = useState(false);
+
   const { register, handleSubmit, control, setValue, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      cedula:           defaultValues?.cedula           ?? '',
-      nombre:           defaultValues?.nombre           ?? '',
-      apellidos:        defaultValues?.apellidos        ?? '',
-      sexo:             defaultValues?.sexo             ?? undefined,
-      fecha_nacimiento: defaultValues?.fecha_nacimiento ?? '',
-      direccion:        defaultValues?.direccion        ?? '',
-      telefono:         defaultValues?.telefono         ?? '',
-      email:            defaultValues?.email            ?? '',
-      lider_cedula:     defaultValues?.lider_cedula     ?? '',
-      barrio_id:        defaultValues?.barrio_id?.toString() ?? '',
+      cedula:             defaultValues?.cedula             ?? '',
+      nombre:             defaultValues?.nombre             ?? '',
+      apellidos:          defaultValues?.apellidos          ?? '',
+      sexo:               defaultValues?.sexo               ?? undefined,
+      fecha_nacimiento:   defaultValues?.fecha_nacimiento   ?? '',
+      direccion:          defaultValues?.direccion          ?? '',
+      telefono:           defaultValues?.telefono           ?? '',
+      email:              defaultValues?.email              ?? '',
+      lider_cedula:       defaultValues?.lider_cedula       ?? '',
+      barrio_id:          defaultValues?.barrio_id?.toString()          ?? '',
+      puesto_votacion_id: defaultValues?.puesto_votacion_id?.toString() ?? '',
     },
   });
 
-  // Cargar barrios cuando cambia la comuna seleccionada
+  // Barrios: carga cuando cambia la comuna
   useEffect(() => {
-    if (!selectedComunaId) {
-      setBarrios([]);
-      setValue('barrio_id', '');
-      return;
-    }
+    if (!selectedComunaId) { setBarrios([]); setValue('barrio_id', ''); return; }
     setLoadingBarrios(true);
     fetch(`/api/barrios?comuna_id=${selectedComunaId}`)
-      .then((r) => r.json())
-      .then((data) => { setBarrios(data); setLoadingBarrios(false); })
+      .then(r => r.json())
+      .then(data => { setBarrios(data); setLoadingBarrios(false); })
       .catch(() => setLoadingBarrios(false));
   }, [selectedComunaId, setValue]);
 
-  // Cargar barrios iniciales si ya viene con barrio_id
+  // Barrios: carga inicial en edición
   useEffect(() => {
     if (defaultValues?.initial_comuna_id) {
       fetch(`/api/barrios?comuna_id=${defaultValues.initial_comuna_id}`)
-        .then((r) => r.json())
-        .then(setBarrios)
-        .catch(() => {});
+        .then(r => r.json()).then(setBarrios).catch(() => {});
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleComunaChange = (val: string) => {
-    setSelectedComunaId(val);
-    setValue('barrio_id', '');
-  };
+  // Puestos: carga cuando cambia la zona
+  useEffect(() => {
+    if (!selectedZonaId) { setPuestos([]); setValue('puesto_votacion_id', ''); return; }
+    setLoadingPuestos(true);
+    fetch(`/api/puestos?zona_id=${selectedZonaId}`)
+      .then(r => r.json())
+      .then(data => { setPuestos(data); setLoadingPuestos(false); })
+      .catch(() => setLoadingPuestos(false));
+  }, [selectedZonaId, setValue]);
+
+  // Puestos: carga inicial en edición
+  useEffect(() => {
+    if (defaultValues?.initial_zona_id) {
+      fetch(`/api/puestos?zona_id=${defaultValues.initial_zona_id}`)
+        .then(r => r.json()).then(setPuestos).catch(() => {});
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -148,36 +170,53 @@ export default function ColaboradorForm({ defaultValues, lideres, comunas, onSub
         <Field label="Comuna">
           <select
             value={selectedComunaId}
-            onChange={(e) => handleComunaChange(e.target.value)}
+            onChange={e => { setSelectedComunaId(e.target.value); setValue('barrio_id', ''); }}
             className={inputCls(false)}
           >
             <option value="">Sin comuna</option>
-            {comunas.map((c) => (
-              <option key={c.id} value={c.id}>{c.nombre}</option>
-            ))}
+            {comunas.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
           </select>
         </Field>
 
-        <Field label="Barrio" error={errors.barrio_id?.message}>
+        <Field label="Barrio">
           <Controller
             name="barrio_id"
             control={control}
             render={({ field }) => (
-              <select
-                {...field}
-                disabled={!selectedComunaId || loadingBarrios}
-                className={inputCls(false)}
-              >
+              <select {...field} disabled={!selectedComunaId || loadingBarrios} className={inputCls(false)}>
                 <option value="">
-                  {!selectedComunaId
-                    ? 'Primero selecciona una comuna'
-                    : loadingBarrios
-                      ? 'Cargando barrios...'
-                      : 'Sin barrio'}
+                  {!selectedComunaId ? 'Primero selecciona una comuna' : loadingBarrios ? 'Cargando...' : 'Sin barrio'}
                 </option>
-                {barrios.map((b) => (
-                  <option key={b.id} value={String(b.id)}>{b.nombre}</option>
-                ))}
+                {barrios.map(b => <option key={b.id} value={String(b.id)}>{b.nombre}</option>)}
+              </select>
+            )}
+          />
+        </Field>
+      </div>
+
+      {/* Cascada Zona → Puesto de Votación */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        <Field label="Zona de votación">
+          <select
+            value={selectedZonaId}
+            onChange={e => { setSelectedZonaId(e.target.value); setValue('puesto_votacion_id', ''); }}
+            className={inputCls(false)}
+          >
+            <option value="">Sin zona</option>
+            {zonas.map(z => <option key={z.id} value={z.id}>Zona {z.codigo}</option>)}
+          </select>
+        </Field>
+
+        <Field label="Puesto de votación">
+          <Controller
+            name="puesto_votacion_id"
+            control={control}
+            render={({ field }) => (
+              <select {...field} disabled={!selectedZonaId || loadingPuestos} className={inputCls(false)}>
+                <option value="">
+                  {!selectedZonaId ? 'Primero selecciona una zona' : loadingPuestos ? 'Cargando...' : 'Sin puesto'}
+                </option>
+                {puestos.map(p => <option key={p.id} value={String(p.id)}>{p.codigo} — {p.nombre}</option>)}
               </select>
             )}
           />
@@ -187,10 +226,8 @@ export default function ColaboradorForm({ defaultValues, lideres, comunas, onSub
       <Field label="Líder asignado *" error={errors.lider_cedula?.message}>
         <select {...register('lider_cedula')} className={inputCls(!!errors.lider_cedula)}>
           <option value="">Seleccionar líder...</option>
-          {lideres.map((l) => (
-            <option key={l.cedula} value={l.cedula}>
-              {l.apellidos}, {l.nombre} — {l.cedula}
-            </option>
+          {lideres.map(l => (
+            <option key={l.cedula} value={l.cedula}>{l.apellidos}, {l.nombre} — {l.cedula}</option>
           ))}
         </select>
       </Field>

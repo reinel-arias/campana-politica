@@ -32,12 +32,16 @@ async function getColaboradores(
     SELECT c.*,
            l.nombre AS lider_nombre, l.apellidos AS lider_apellidos,
            h.vehiculo, h.perifoneo, h.orador_publico, h.redes_sociales,
-           b.nombre AS barrio_nombre, co.nombre AS comuna_nombre
+           b.nombre AS barrio_nombre, co.nombre AS comuna_nombre,
+           pv.nombre AS puesto_nombre, pv.codigo AS puesto_codigo,
+           z.codigo AS zona_codigo
     FROM colaboradores c
     JOIN lideres l ON c.lider_cedula = l.cedula
     LEFT JOIN habilidades_colaborador h ON h.colaborador_id = c.id
     LEFT JOIN barrios b ON c.barrio_id = b.id
     LEFT JOIN comunas co ON b.comuna_id = co.id
+    LEFT JOIN puestos_votacion pv ON c.puesto_votacion_id = pv.id
+    LEFT JOIN zonas z ON pv.zona_id = z.id
     ${where}
     ORDER BY c.apellidos, c.nombre
   `;

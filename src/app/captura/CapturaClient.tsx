@@ -3,13 +3,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ColaboradorForm from '@/components/ColaboradorForm';
-import { Lider, Comuna } from '@/types';
+import { Lider, Comuna, Zona } from '@/types';
 
 type FormValues = {
   cedula: string; nombre: string; apellidos: string;
   sexo: 'M' | 'F'; fecha_nacimiento: string;
   direccion: string; telefono: string; email: string;
-  lider_cedula: string; barrio_id: string;
+  lider_cedula: string; barrio_id: string; puesto_votacion_id: string;
 };
 
 type HabKey = 'vehiculo' | 'perifoneo' | 'orador_publico' | 'redes_sociales';
@@ -28,9 +28,10 @@ const HAB_INICIAL: Record<HabKey, boolean> = {
 interface Props {
   lideres: Lider[];
   comunas: Comuna[];
+  zonas: Zona[];
 }
 
-export default function CapturaClient({ lideres, comunas }: Props) {
+export default function CapturaClient({ lideres, comunas, zonas }: Props) {
   const router = useRouter();
   const [habilidades, setHabilidades] = useState<Record<HabKey, boolean>>(HAB_INICIAL);
   const [success, setSuccess] = useState(false);
@@ -51,6 +52,7 @@ export default function CapturaClient({ lideres, comunas }: Props) {
       body: JSON.stringify({
         ...data,
         barrio_id: data.barrio_id ? Number(data.barrio_id) : null,
+        puesto_votacion_id: data.puesto_votacion_id ? Number(data.puesto_votacion_id) : null,
       }),
     });
 
@@ -129,6 +131,7 @@ export default function CapturaClient({ lideres, comunas }: Props) {
             key={formKey}
             lideres={lideres}
             comunas={comunas}
+            zonas={zonas}
             onSubmit={handleSubmit}
           />
         </div>

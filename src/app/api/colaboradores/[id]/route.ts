@@ -9,12 +9,14 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
              l.nombre AS lider_nombre, l.apellidos AS lider_apellidos,
              h.vehiculo, h.perifoneo, h.orador_publico, h.redes_sociales,
              b.nombre AS barrio_nombre, b.comuna_id,
-             co.nombre AS comuna_nombre
+             co.nombre AS comuna_nombre,
+             pv.nombre AS puesto_nombre, pv.zona_id
       FROM colaboradores c
       JOIN lideres l ON c.lider_cedula = l.cedula
       LEFT JOIN habilidades_colaborador h ON h.colaborador_id = c.id
       LEFT JOIN barrios b ON c.barrio_id = b.id
       LEFT JOIN comunas co ON b.comuna_id = co.id
+      LEFT JOIN puestos_votacion pv ON c.puesto_votacion_id = pv.id
       WHERE c.id = ?
     `, [params.id]);
 
@@ -32,7 +34,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   const conn = await pool.getConnection();
   try {
     const body = await req.json();
-    const { cedula, nombre, apellidos, sexo, fecha_nacimiento, direccion, telefono, email, lider_cedula, barrio_id, habilidades } = body;
+    const { cedula, nombre, apellidos, sexo, fecha_nacimiento, direccion, telefono, email, lider_cedula, barrio_id, puesto_votacion_id, habilidades } = body;
 
     if (!cedula || !nombre || !apellidos || !sexo || !fecha_nacimiento || !lider_cedula) {
       return NextResponse.json({ error: 'Todos los campos requeridos deben estar completos' }, { status: 400 });
@@ -42,10 +44,10 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
     const [result] = await conn.query<ResultSetHeader>(
       `UPDATE colaboradores SET cedula=?, nombre=?, apellidos=?, sexo=?, fecha_nacimiento=?,
-       direccion=?, telefono=?, email=?, lider_cedula=?, barrio_id=? WHERE id=?`,
+       direccion=?, telefono=?, email=?, lider_cedula=?, barrio_id=?, puesto_votacion_id=? WHERE id=?`,
       [cedula.trim(), nombre.trim(), apellidos.trim(), sexo, fecha_nacimiento,
        (direccion || '').trim(), (telefono || '').trim(), (email || '').trim(),
-       lider_cedula, barrio_id || null, params.id]
+       lider_cedula, barrio_id || null, puesto_votacion_id || null, params.id]
     );
 
     if (result.affectedRows === 0) {

@@ -43,6 +43,10 @@ export interface Colaborador {
   barrio_id?: number | null;
   barrio_nombre?: string;
   comuna_nombre?: string;
+  puesto_votacion_id?: number | null;
+  puesto_nombre?: string;
+  puesto_codigo?: string;
+  zona_codigo?: string;
   creado_en?: string;
   lider_nombre?: string;
   lider_apellidos?: string;
@@ -79,6 +83,22 @@ export interface GestionResumen {
   proxima_fecha: string | null;
 }
 
+export interface Zona {
+  id: number;
+  codigo: string;
+  total_puestos?: number;
+}
+
+export interface PuestoVotacion {
+  id: number;
+  zona_id: number;
+  codigo: string;
+  nombre: string;
+  direccion: string;
+  num_mesas: number;
+  zona_codigo?: string;
+}
+
 export interface ColaboradorFormData {
   cedula: string;
   nombre: string;
@@ -90,4 +110,5 @@ export interface ColaboradorFormData {
   email: string;
   lider_cedula: string;
   barrio_id?: number | null;
+  puesto_votacion_id?: number | null;
 }

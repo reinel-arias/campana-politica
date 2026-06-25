@@ -24,7 +24,6 @@ const HABILIDADES: { key: HabKey; label: string }[] = [
   { key: 'redes_sociales', label: 'Redes Sociales' },
 ];
 
-const SEXO = { M: 'Masculino', F: 'Femenino' };
 
 function calcularEdad(fechaNacimiento: string): number {
   const hoy = new Date();
@@ -220,9 +219,9 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
               <tr className="border-b border-slate-100 bg-slate-50">
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold">Cédula</th>
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold">Nombre</th>
-                <th className="text-left px-5 py-3 text-slate-600 font-semibold hidden md:table-cell">Sexo</th>
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold hidden lg:table-cell">Edad</th>
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold hidden lg:table-cell">Barrio</th>
+                <th className="text-left px-5 py-3 text-slate-600 font-semibold hidden xl:table-cell">Puesto Votación</th>
                 <th className="px-5 py-3"></th>
               </tr>
             </thead>
@@ -235,21 +234,21 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
                 >
                   <td className="px-5 py-3.5 text-slate-500 font-mono text-xs">{c.cedula}</td>
                   <td className="px-5 py-3.5">
-                    <p className="font-medium text-slate-800">{c.apellidos}, {c.nombre}</p>
+                    <p className={`font-medium ${c.sexo === 'M' ? 'text-blue-700' : 'text-rose-600'}`}>
+                      {c.apellidos}, {c.nombre}
+                    </p>
                     {c.telefono && <p className="text-xs text-slate-400 mt-0.5">{c.telefono}</p>}
-                  </td>
-                  <td className="px-5 py-3.5 hidden md:table-cell">
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                      c.sexo === 'M' ? 'bg-blue-50 text-blue-700' : 'bg-pink-50 text-pink-700'
-                    }`}>
-                      {SEXO[c.sexo]}
-                    </span>
                   </td>
                   <td className="px-5 py-3.5 text-slate-500 text-xs hidden lg:table-cell">
                     {calcularEdad(c.fecha_nacimiento)} años
                   </td>
                   <td className="px-5 py-3.5 text-slate-500 text-xs hidden lg:table-cell">
                     {c.barrio_nombre ?? '—'}
+                  </td>
+                  <td className="px-5 py-3.5 text-slate-500 text-xs hidden xl:table-cell">
+                    {c.puesto_nombre
+                      ? <span>{c.zona_codigo}-{c.puesto_codigo} {c.puesto_nombre}</span>
+                      : '—'}
                   </td>
                   <td className="px-5 py-3.5 text-right">
                     <button

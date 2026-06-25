@@ -1,6 +1,8 @@
+export const dynamic = 'force-dynamic';
+
 import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
-import { Lider, Comuna } from '@/types';
+import { Lider, Comuna, Zona } from '@/types';
 import CapturaClient from './CapturaClient';
 
 async function getLideres(): Promise<Lider[]> {
@@ -17,7 +19,14 @@ async function getComunas(): Promise<Comuna[]> {
   return rows as Comuna[];
 }
 
+async function getZonas(): Promise<Zona[]> {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    'SELECT id, codigo FROM zonas ORDER BY codigo',
+  );
+  return rows as Zona[];
+}
+
 export default async function CapturaPage() {
-  const [lideres, comunas] = await Promise.all([getLideres(), getComunas()]);
-  return <CapturaClient lideres={lideres} comunas={comunas} />;
+  const [lideres, comunas, zonas] = await Promise.all([getLideres(), getComunas(), getZonas()]);
+  return <CapturaClient lideres={lideres} comunas={comunas} zonas={zonas} />;
 }
