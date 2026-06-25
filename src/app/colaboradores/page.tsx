@@ -3,13 +3,15 @@ export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
-import { Colaborador, Lider, Comuna, Barrio } from '@/types';
+import { Colaborador, Lider, Comuna, Barrio, Zona, PuestoVotacion } from '@/types';
 import ColaboradoresClient from './ColaboradoresClient';
 
 async function getColaboradores(
   liderCedula?: string,
   barrioId?: string,
   comunaId?: string,
+  zonaId?: string,
+  puestoId?: string,
 ): Promise<Colaborador[]> {
   const conditions: string[] = [];
   const params: (string | number)[] = [];
@@ -24,6 +26,13 @@ async function getColaboradores(
   } else if (comunaId) {
     conditions.push('b.comuna_id = ?');
     params.push(Number(comunaId));
+  }
+  if (puestoId) {
+    conditions.push('c.puesto_votacion_id = ?');
+    params.push(Number(puestoId));
+  } else if (zonaId) {
+    conditions.push('pv.zona_id = ?');
+    params.push(Number(zonaId));
   }
 
   const where = conditions.length ? ' WHERE ' + conditions.join(' AND ') : '';
@@ -66,23 +75,41 @@ async function getBarrios(): Promise<Barrio[]> {
   return rows as Barrio[];
 }
 
+async function getZonas(): Promise<Zona[]> {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    'SELECT id, codigo FROM zonas ORDER BY codigo',
+  );
+  return rows as Zona[];
+}
+
+async function getPuestos(): Promise<PuestoVotacion[]> {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    'SELECT id, zona_id, codigo, nombre FROM puestos_votacion ORDER BY zona_id, codigo',
+  );
+  return rows as PuestoVotacion[];
+}
+
 export default async function ColaboradoresPage({
   searchParams,
 }: {
-  searchParams: { lider_cedula?: string; barrio_id?: string; comuna_id?: string };
+  searchParams: { lider_cedula?: string; barrio_id?: string; comuna_id?: string; zona_id?: string; puesto_id?: string };
 }) {
   let colaboradores: Colaborador[] = [];
   let lideres: Lider[] = [];
   let comunas: Comuna[] = [];
   let barrios: Barrio[] = [];
+  let zonas: Zona[] = [];
+  let puestos: PuestoVotacion[] = [];
   let dbError = false;
 
   try {
-    [colaboradores, lideres, comunas, barrios] = await Promise.all([
-      getColaboradores(searchParams.lider_cedula, searchParams.barrio_id, searchParams.comuna_id),
+    [colaboradores, lideres, comunas, barrios, zonas, puestos] = await Promise.all([
+      getColaboradores(searchParams.lider_cedula, searchParams.barrio_id, searchParams.comuna_id, searchParams.zona_id, searchParams.puesto_id),
       getLideres(),
       getComunas(),
       getBarrios(),
+      getZonas(),
+      getPuestos(),
     ]);
   } catch {
     dbError = true;
@@ -114,9 +141,13 @@ export default async function ColaboradoresPage({
         lideres={lideres}
         comunas={comunas}
         barrios={barrios}
+        zonas={zonas}
+        puestos={puestos}
         selectedLider={searchParams.lider_cedula || ''}
         selectedComuna={searchParams.comuna_id || ''}
         selectedBarrio={searchParams.barrio_id || ''}
+        selectedZona={searchParams.zona_id || ''}
+        selectedPuesto={searchParams.puesto_id || ''}
       />
     </div>
   );
