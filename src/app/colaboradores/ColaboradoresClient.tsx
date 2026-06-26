@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Colaborador, Lider, Comuna, Barrio, PuestoVotacion } from '@/types';
@@ -38,6 +38,69 @@ function calcularEdad(fechaNacimiento: string): number {
 
 function getHab(c: Colaborador, key: HabKey): boolean {
   return !!(c as unknown as Record<string, unknown>)[key];
+}
+
+function PuestoSearch({ puestos, value, onChange }: {
+  puestos: PuestoVotacion[];
+  value: string;
+  onChange: (val: string) => void;
+}) {
+  const [query, setQuery] = useState('');
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const selected = puestos.find((p) => p.id.toString() === value);
+  const displayValue = open ? query : (selected?.nombre ?? '');
+
+  const filtered = query.trim()
+    ? puestos.filter((p) => p.nombre.toLowerCase().includes(query.toLowerCase()))
+    : puestos;
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+        setQuery('');
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <input
+        value={displayValue}
+        onChange={(e) => { setQuery(e.target.value); setOpen(true); if (!e.target.value) onChange(''); }}
+        onFocus={() => { setOpen(true); setQuery(selected?.nombre ?? ''); }}
+        placeholder="Todos los puestos..."
+        className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white min-w-[220px] pr-6"
+      />
+      {value && !open && (
+        <button
+          onClick={() => { onChange(''); setQuery(''); }}
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-lg leading-none"
+        >×</button>
+      )}
+      {open && (
+        <div className="absolute z-20 mt-1 w-full max-h-60 overflow-y-auto bg-white border border-slate-200 rounded-lg shadow-lg">
+          <div
+            onMouseDown={() => { onChange(''); setOpen(false); setQuery(''); }}
+            className="px-3 py-2 text-sm text-slate-400 hover:bg-slate-50 cursor-pointer"
+          >Todos</div>
+          {filtered.length === 0 ? (
+            <div className="px-3 py-2 text-sm text-slate-400">Sin resultados</div>
+          ) : filtered.map((p) => (
+            <div
+              key={p.id}
+              onMouseDown={() => { onChange(p.id.toString()); setOpen(false); setQuery(''); }}
+              className={`px-3 py-2 text-sm cursor-pointer hover:bg-blue-50 ${p.id.toString() === value ? 'bg-blue-50 font-medium text-blue-700' : 'text-slate-700'}`}
+            >{p.nombre}</div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function ColaboradoresClient({ colaboradores, lideres, comunas, barrios, puestos, selectedLider, selectedComuna, selectedBarrio, selectedPuesto }: Props) {
@@ -180,16 +243,11 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
           {/* Filtro por puesto */}
           <div className="flex items-center gap-2">
             <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap">Puesto</label>
-            <select
+            <PuestoSearch
+              puestos={puestos}
               value={puestoFiltro}
-              onChange={(e) => handlePuestoFiltro(e.target.value)}
-              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white min-w-[200px]"
-            >
-              <option value="">Todos</option>
-              {puestos.map((p) => (
-                <option key={p.id} value={p.id}>{p.nombre}</option>
-              ))}
-            </select>
+              onChange={handlePuestoFiltro}
+            />
           </div>
         </div>
 
