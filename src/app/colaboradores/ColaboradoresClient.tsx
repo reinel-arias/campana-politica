@@ -40,21 +40,23 @@ function getHab(c: Colaborador, key: HabKey): boolean {
   return !!(c as unknown as Record<string, unknown>)[key];
 }
 
-function PuestoSearch({ puestos, value, onChange }: {
-  puestos: PuestoVotacion[];
+function SearchableSelect({ items, value, onChange, placeholder = 'Todos...', minWidth = '180px' }: {
+  items: { id: number; nombre: string }[];
   value: string;
   onChange: (val: string) => void;
+  placeholder?: string;
+  minWidth?: string;
 }) {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  const selected = puestos.find((p) => p.id.toString() === value);
+  const selected = items.find((p) => p.id.toString() === value);
   const displayValue = open ? query : (selected?.nombre ?? '');
 
   const filtered = query.trim()
-    ? puestos.filter((p) => p.nombre.toLowerCase().includes(query.toLowerCase()))
-    : puestos;
+    ? items.filter((p) => p.nombre.toLowerCase().includes(query.toLowerCase()))
+    : items;
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -68,13 +70,13 @@ function PuestoSearch({ puestos, value, onChange }: {
   }, []);
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="relative" style={{ minWidth }}>
       <input
         value={displayValue}
         onChange={(e) => { setQuery(e.target.value); setOpen(true); if (!e.target.value) onChange(''); }}
         onFocus={() => { setOpen(true); setQuery(selected?.nombre ?? ''); }}
-        placeholder="Todos los puestos..."
-        className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white min-w-[220px] pr-6"
+        placeholder={placeholder}
+        className="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white pr-6"
       />
       {value && !open && (
         <button
@@ -225,17 +227,13 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
           {/* Filtro por barrio */}
           <div className="flex items-center gap-2">
             <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap">Barrio</label>
-            <select
+            <SearchableSelect
+              items={barriosDeFiltro}
               value={barrioFiltro}
-              onChange={(e) => handleBarrioFiltro(e.target.value)}
-              disabled={barriosDeFiltro.length === 0}
-              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white min-w-[160px] disabled:opacity-50"
-            >
-              <option value="">Todos</option>
-              {barriosDeFiltro.map((b) => (
-                <option key={b.id} value={b.id}>{b.nombre}</option>
-              ))}
-            </select>
+              onChange={handleBarrioFiltro}
+              placeholder="Todos los barrios..."
+              minWidth="180px"
+            />
           </div>
 
           <div className="hidden sm:block w-px h-6 bg-slate-200" />
@@ -243,10 +241,12 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
           {/* Filtro por puesto */}
           <div className="flex items-center gap-2">
             <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap">Puesto</label>
-            <PuestoSearch
-              puestos={puestos}
+            <SearchableSelect
+              items={puestos}
               value={puestoFiltro}
               onChange={handlePuestoFiltro}
+              placeholder="Todos los puestos..."
+              minWidth="220px"
             />
           </div>
         </div>
