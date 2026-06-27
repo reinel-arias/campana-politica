@@ -318,10 +318,12 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
                 >
                   <td className="px-5 py-3.5 text-slate-500 font-mono text-xs">{c.cedula}</td>
                   <td className="px-5 py-3.5">
-                    <p className={`font-medium ${c.sexo === 'M' ? 'text-blue-700' : 'text-rose-600'}`}>
-                      {c.apellidos}, {c.nombre}
-                    </p>
-                    {c.telefono && <p className="text-xs text-slate-400 mt-0.5">{c.telefono}</p>}
+                    <div className="max-w-[12rem]">
+                      <p className={`font-medium ${c.sexo === 'M' ? 'text-blue-700' : 'text-rose-600'}`}>
+                        {c.apellidos}, {c.nombre}
+                      </p>
+                      {c.telefono && <p className="text-xs text-slate-400 mt-0.5">{c.telefono}</p>}
+                    </div>
                   </td>
                   <td className="px-5 py-3.5 text-slate-500 text-xs hidden lg:table-cell">
                     <p>{calcularEdad(c.fecha_nacimiento)} años</p>
