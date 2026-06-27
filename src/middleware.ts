@@ -32,7 +32,7 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // ── Portal de captura ────────────────────────────────────────────────────
-  if (pathname.startsWith('/captura')) {
+  if (pathname.startsWith('/captura') || pathname.startsWith('/api/captura')) {
     if (
       pathname.startsWith('/captura/login') ||
       pathname.startsWith('/api/captura/auth')
