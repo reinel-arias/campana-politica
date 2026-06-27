@@ -31,14 +31,18 @@ async function verifySession(token: string): Promise<boolean> {
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // ── Portal de captura ────────────────────────────────────────────────────
+  // ── Rutas públicas (sin auth) ────────────────────────────────────────────
+  if (
+    pathname.startsWith('/captura/login') ||
+    pathname.startsWith('/api/captura/auth') ||
+    pathname.startsWith('/login') ||
+    pathname.startsWith('/api/auth')
+  ) {
+    return NextResponse.next();
+  }
+
+  // ── Portal de captura (páginas y API propias) ────────────────────────────
   if (pathname.startsWith('/captura') || pathname.startsWith('/api/captura')) {
-    if (
-      pathname.startsWith('/captura/login') ||
-      pathname.startsWith('/api/captura/auth')
-    ) {
-      return NextResponse.next();
-    }
     const token = req.cookies.get('captura-session')?.value;
     if (!token || !(await verifySession(token))) {
       return NextResponse.redirect(new URL('/captura/login', req.url));
@@ -46,10 +50,21 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // ── App principal ────────────────────────────────────────────────────────
-  if (pathname.startsWith('/login') || pathname.startsWith('/api/auth')) {
-    return NextResponse.next();
+  // ── API compartida: acepta sesión principal O de captura ─────────────────
+  const sharedApis = ['/api/barrios', '/api/puestos', '/api/colaboradores'];
+  if (sharedApis.some((p) => pathname.startsWith(p))) {
+    const mainToken    = req.cookies.get('session')?.value;
+    const capturaToken = req.cookies.get('captura-session')?.value;
+    if (
+      (mainToken    && (await verifySession(mainToken)))    ||
+      (capturaToken && (await verifySession(capturaToken)))
+    ) {
+      return NextResponse.next();
+    }
+    return NextResponse.redirect(new URL('/login', req.url));
   }
+
+  // ── App principal ────────────────────────────────────────────────────────
   const token = req.cookies.get('session')?.value;
   if (!token || !(await verifySession(token))) {
     return NextResponse.redirect(new URL('/login', req.url));
