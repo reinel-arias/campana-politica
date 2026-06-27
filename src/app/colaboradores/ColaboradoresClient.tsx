@@ -302,7 +302,7 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50">
-                <th className="text-left px-5 py-3 text-slate-600 font-semibold">Cédula</th>
+                <th className="text-left px-5 py-3 text-slate-600 font-semibold w-px whitespace-nowrap">Cédula</th>
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold">Nombre</th>
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold hidden lg:table-cell">Edad / Barrio</th>
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold hidden xl:table-cell">Puesto Votación</th>
@@ -316,7 +316,7 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
                   onClick={() => router.push(`/colaboradores/${c.id}`)}
                   className="hover:bg-blue-50 cursor-pointer transition-colors"
                 >
-                  <td className="px-5 py-3.5 text-slate-500 font-mono text-xs">{c.cedula}</td>
+                  <td className="px-5 py-3.5 text-slate-500 font-mono text-xs whitespace-nowrap">{c.cedula}</td>
                   <td className="px-5 py-3.5">
                     <div className="max-w-[12rem]">
                       <p className={`font-medium ${c.sexo === 'M' ? 'text-blue-700' : 'text-rose-600'}`}>
