@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyCredentials, createToken } from '@/lib/auth';
+import { readUsers, createToken } from '@/lib/auth';
 
 export async function POST(req: NextRequest) {
   const { username, password } = await req.json();
 
-  if (!username || !password || !verifyCredentials(username, password, 'capturadores.txt')) {
+  if (!username || !password) {
+    return NextResponse.json({ error: 'Credenciales incorrectas' }, { status: 401 });
+  }
+
+  const users = readUsers('capturadores.txt');
+  console.log(`[captura/login] usuarios cargados: ${users.size}, intento: "${username}"`);
+
+  if (users.get(username) !== password) {
     return NextResponse.json({ error: 'Credenciales incorrectas' }, { status: 401 });
   }
 
