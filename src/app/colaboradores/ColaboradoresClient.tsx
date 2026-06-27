@@ -303,7 +303,7 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50">
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold w-px whitespace-nowrap">Cédula</th>
-                <th className="text-left px-5 py-3 text-slate-600 font-semibold">Nombre</th>
+                <th className="text-left px-5 py-3 text-slate-600 font-semibold w-1/4">Nombre</th>
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold hidden lg:table-cell">Edad / Barrio</th>
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold hidden xl:table-cell">Puesto Votación</th>
                 <th className="px-5 py-3"></th>
@@ -318,12 +318,10 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
                 >
                   <td className="px-5 py-3.5 text-slate-500 font-mono text-xs whitespace-nowrap">{c.cedula}</td>
                   <td className="px-5 py-3.5">
-                    <div className="max-w-[12rem]">
-                      <p className={`font-medium ${c.sexo === 'M' ? 'text-blue-700' : 'text-rose-600'}`}>
-                        {c.apellidos}, {c.nombre}
-                      </p>
-                      {c.telefono && <p className="text-xs text-slate-400 mt-0.5">{c.telefono}</p>}
-                    </div>
+                    <p className={`font-medium ${c.sexo === 'M' ? 'text-blue-700' : 'text-rose-600'}`}>
+                      {c.apellidos}, {c.nombre}
+                    </p>
+                    {c.telefono && <p className="text-xs text-slate-400 mt-0.5">{c.telefono}</p>}
                   </td>
                   <td className="px-5 py-3.5 text-slate-500 text-xs hidden lg:table-cell">
                     <p>{calcularEdad(c.fecha_nacimiento)} años</p>
