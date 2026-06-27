@@ -304,8 +304,7 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
               <tr className="border-b border-slate-100 bg-slate-50">
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold">Cédula</th>
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold">Nombre</th>
-                <th className="text-left px-5 py-3 text-slate-600 font-semibold hidden lg:table-cell">Edad</th>
-                <th className="text-left px-5 py-3 text-slate-600 font-semibold hidden lg:table-cell">Barrio</th>
+                <th className="text-left px-5 py-3 text-slate-600 font-semibold hidden lg:table-cell">Edad / Barrio</th>
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold hidden xl:table-cell">Puesto Votación</th>
                 <th className="px-5 py-3"></th>
               </tr>
@@ -325,10 +324,8 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
                     {c.telefono && <p className="text-xs text-slate-400 mt-0.5">{c.telefono}</p>}
                   </td>
                   <td className="px-5 py-3.5 text-slate-500 text-xs hidden lg:table-cell">
-                    {calcularEdad(c.fecha_nacimiento)} años
-                  </td>
-                  <td className="px-5 py-3.5 text-slate-500 text-xs hidden lg:table-cell">
-                    {c.barrio_nombre ?? '—'}
+                    <p>{calcularEdad(c.fecha_nacimiento)} años</p>
+                    {c.barrio_nombre && <p className="text-slate-400 mt-0.5">{c.barrio_nombre}</p>}
                   </td>
                   <td className="px-5 py-3.5 text-slate-500 text-xs hidden xl:table-cell">
                     {c.puesto_nombre
