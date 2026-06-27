@@ -303,7 +303,7 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50">
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold">Cédula</th>
-                <th className="text-left px-5 py-3 text-slate-600 font-semibold">Nombre</th>
+                <th className="text-left px-5 py-3 text-slate-600 font-semibold w-full min-w-[9rem]">Nombre</th>
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold hidden lg:table-cell">Edad / Barrio</th>
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold hidden xl:table-cell">Puesto Votación</th>
                 <th className="px-5 py-3"></th>
@@ -317,8 +317,8 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
                   className="hover:bg-blue-50 cursor-pointer transition-colors"
                 >
                   <td className="px-5 py-3.5 text-slate-500 font-mono text-xs">{c.cedula}</td>
-                  <td className="px-5 py-3.5">
-                    <p className={`font-medium ${c.sexo === 'M' ? 'text-blue-700' : 'text-rose-600'}`}>
+                  <td className="px-5 py-3.5 min-w-0">
+                    <p className={`font-medium break-words ${c.sexo === 'M' ? 'text-blue-700' : 'text-rose-600'}`}>
                       {c.apellidos}, {c.nombre}
                     </p>
                     {c.telefono && <p className="text-xs text-slate-400 mt-0.5">{c.telefono}</p>}
