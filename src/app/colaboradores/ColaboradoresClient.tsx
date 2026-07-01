@@ -304,7 +304,7 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
               <tr className="border-b border-slate-100 bg-slate-50">
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold w-1/4">Nombre</th>
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold w-[18%] hidden lg:table-cell">Edad / Barrio</th>
-                <th className="text-left px-5 py-3 text-slate-600 font-semibold w-[22%] hidden xl:table-cell">Puesto Votación</th>
+                <th className="text-left px-5 py-3 text-slate-600 font-semibold w-[20%] hidden lg:table-cell">Puesto Votación</th>
                 <th className="px-5 py-3 w-px"></th>
               </tr>
             </thead>
@@ -325,7 +325,7 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
                     <p>{calcularEdad(c.fecha_nacimiento)} años</p>
                     {c.barrio_nombre && <p className="text-slate-400 mt-0.5">{c.barrio_nombre}</p>}
                   </td>
-                  <td className="px-5 py-3.5 text-slate-500 text-xs hidden xl:table-cell">
+                  <td className="px-5 py-3.5 text-slate-500 text-xs hidden lg:table-cell">
                     {c.puesto_nombre
                       ? <span>{c.zona_codigo}-{c.puesto_codigo} {c.puesto_nombre}</span>
                       : '—'}
