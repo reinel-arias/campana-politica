@@ -303,7 +303,7 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50">
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold w-1/4">Nombre</th>
-                <th className="text-left px-5 py-3 text-slate-600 font-semibold w-[18%] hidden md:table-cell">Edad / Barrio</th>
+                <th className="text-left px-5 py-3 text-slate-600 font-semibold w-[12%] hidden md:table-cell">Edad / Barrio</th>
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold w-[20%] hidden lg:table-cell">Puesto Votación</th>
                 <th className="px-5 py-3 w-px"></th>
               </tr>
