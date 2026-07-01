@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
 
     if (colaboradorId) {
       const [rows] = await pool.query<RowDataPacket[]>(
-        `SELECT id, colaborador_id, descripcion,
+        `SELECT id, colaborador_id, descripcion, delegado_a,
                 DATE_FORMAT(fecha_limite, '%Y-%m-%d') AS fecha_limite,
                 gestionado,
                 DATE_FORMAT(fecha_ejecucion, '%Y-%m-%d') AS fecha_ejecucion,
@@ -51,15 +51,15 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { colaborador_id, descripcion, fecha_limite } = body;
+    const { colaborador_id, descripcion, delegado_a, fecha_limite } = body;
 
     if (!colaborador_id || !descripcion || !fecha_limite) {
       return NextResponse.json({ error: 'colaborador_id, descripcion y fecha_limite son requeridos' }, { status: 400 });
     }
 
     const [result] = await pool.query<ResultSetHeader>(
-      `INSERT INTO gestiones (colaborador_id, descripcion, fecha_limite) VALUES (?, ?, ?)`,
-      [colaborador_id, descripcion.trim(), fecha_limite]
+      `INSERT INTO gestiones (colaborador_id, descripcion, delegado_a, fecha_limite) VALUES (?, ?, ?, ?)`,
+      [colaborador_id, descripcion.trim(), delegado_a ?? null, fecha_limite]
     );
 
     return NextResponse.json({ id: result.insertId }, { status: 201 });

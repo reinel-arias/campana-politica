@@ -65,6 +65,7 @@ export interface Gestion {
   id: number;
   colaborador_id: number;
   descripcion: string;
+  delegado_a: string | null;
   fecha_limite: string;       // YYYY-MM-DD
   gestionado: boolean;
   fecha_ejecucion: string | null;

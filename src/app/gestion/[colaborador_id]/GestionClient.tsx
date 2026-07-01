@@ -34,6 +34,7 @@ export default function GestionClient({ colaborador, initialGestiones }: Props) 
   const [gestiones, setGestiones] = useState<Gestion[]>(initialGestiones);
   const [showForm, setShowForm] = useState(false);
   const [descripcion, setDescripcion] = useState('');
+  const [delegadoA, setDelegadoA] = useState('');
   const [fechaLimite, setFechaLimite] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -77,7 +78,7 @@ export default function GestionClient({ colaborador, initialGestiones }: Props) 
     const res = await fetch('/api/gestiones', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ colaborador_id: colaborador.id, descripcion: descripcion.trim(), fecha_limite: fechaLimite }),
+      body: JSON.stringify({ colaborador_id: colaborador.id, descripcion: descripcion.trim(), delegado_a: delegadoA.trim() || null, fecha_limite: fechaLimite }),
     });
     if (!res.ok) {
       setError('Error al guardar. Intente de nuevo.');
@@ -89,12 +90,14 @@ export default function GestionClient({ colaborador, initialGestiones }: Props) 
       id,
       colaborador_id: colaborador.id,
       descripcion: descripcion.trim(),
+      delegado_a: delegadoA.trim() || null,
       fecha_limite: fechaLimite,
       gestionado: false,
       fecha_ejecucion: null,
     };
     setGestiones(prev => [...prev, nueva].sort((a, b) => a.fecha_limite.localeCompare(b.fecha_limite)));
     setDescripcion('');
+    setDelegadoA('');
     setFechaLimite('');
     setShowForm(false);
     setSaving(false);
@@ -155,6 +158,17 @@ export default function GestionClient({ colaborador, initialGestiones }: Props) 
               />
             </div>
             <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Delegado a</label>
+              <input
+                type="text"
+                value={delegadoA}
+                onChange={e => setDelegadoA(e.target.value)}
+                maxLength={100}
+                placeholder="Nombre de quien ejecuta..."
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Fecha límite</label>
               <input
                 type="date"
@@ -204,6 +218,7 @@ export default function GestionClient({ colaborador, initialGestiones }: Props) 
                   {g.descripcion}
                 </p>
                 <div className="mt-1 flex flex-wrap gap-3 text-xs text-slate-500">
+                  {g.delegado_a && <span>Delegado a: <strong>{g.delegado_a}</strong></span>}
                   <span>Fecha límite: {formatDate(g.fecha_limite)}</span>
                   {!g.gestionado && (
                     <span className={g.fecha_limite < today ? 'text-red-600 font-semibold' : 'text-amber-700'}>
