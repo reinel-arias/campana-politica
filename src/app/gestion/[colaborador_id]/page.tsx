@@ -22,7 +22,7 @@ async function getColaborador(id: string): Promise<Colaborador | null> {
 
 async function getGestiones(colaboradorId: string): Promise<Gestion[]> {
   const [rows] = await pool.query<RowDataPacket[]>(
-    `SELECT id, colaborador_id, descripcion,
+    `SELECT id, colaborador_id, descripcion, delegado_a,
             DATE_FORMAT(fecha_limite, '%Y-%m-%d') AS fecha_limite,
             gestionado,
             DATE_FORMAT(fecha_ejecucion, '%Y-%m-%d') AS fecha_ejecucion,
