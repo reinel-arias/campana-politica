@@ -98,11 +98,11 @@ export default function GestionPageClient({ resumen, colaboradores, totalPendien
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
                 <th className="text-left px-4 py-3 font-semibold text-slate-600">Colaborador</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600">Próxima fecha</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-600">Barrio</th>
                 <th className="text-center px-4 py-3 font-semibold text-slate-600">Total</th>
                 <th className="text-center px-4 py-3 font-semibold text-slate-600">Pendientes</th>
                 <th className="text-center px-4 py-3 font-semibold text-slate-600">Vencidas</th>
-                <th className="text-left px-4 py-3 font-semibold text-slate-600">Barrio</th>
+                <th className="text-left px-4 py-3 font-semibold text-slate-600">Próxima fecha</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -116,7 +116,7 @@ export default function GestionPageClient({ resumen, colaboradores, totalPendien
                     {r.colaborador_apellidos}, {r.colaborador_nombre}
                     <span className="block text-xs text-slate-400 font-normal">{r.colaborador_cedula}</span>
                   </td>
-                  <td className="px-4 py-3 text-slate-600">{formatDate(r.proxima_fecha)}</td>
+                  <td className="px-4 py-3 text-slate-600">{r.barrio_nombre ?? '—'}</td>
                   <td className="px-4 py-3 text-center text-slate-600">{r.total}</td>
                   <td className="px-4 py-3 text-center">
                     {Number(r.pendientes) > 0
@@ -130,7 +130,7 @@ export default function GestionPageClient({ resumen, colaboradores, totalPendien
                       : <span className="text-slate-400">0</span>
                     }
                   </td>
-                  <td className="px-4 py-3 text-slate-600">{r.barrio_nombre ?? '—'}</td>
+                  <td className="px-4 py-3 text-slate-600">{formatDate(r.proxima_fecha)}</td>
                 </tr>
               ))}
             </tbody>
