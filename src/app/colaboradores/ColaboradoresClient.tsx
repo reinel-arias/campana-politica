@@ -112,6 +112,7 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
   const [barrioFiltro, setBarrioFiltro] = useState(selectedBarrio);
   const [puestoFiltro, setPuestoFiltro] = useState(selectedPuesto);
   const [habFiltros, setHabFiltros] = useState<Set<HabKey>>(new Set());
+  const [selected, setSelected] = useState<Set<number>>(new Set());
   const [deleting, setDeleting] = useState<number | null>(null);
 
   const navigate = (updates: Record<string, string>) => {
@@ -175,6 +176,29 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
     : colaboradores.filter((c) =>
         Array.from(habFiltros).every((key) => getHab(c, key))
       );
+
+  const allFilteredSelected = filtrados.length > 0 && filtrados.every(c => selected.has(c.id));
+
+  const toggleSelect = (id: number) => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (allFilteredSelected) {
+      setSelected(prev => { const next = new Set(prev); filtrados.forEach(c => next.delete(c.id)); return next; });
+    } else {
+      setSelected(prev => { const next = new Set(prev); filtrados.forEach(c => next.add(c.id)); return next; });
+    }
+  };
+
+  const handleEmail = () => {
+    const ids = Array.from(selected).join(',');
+    router.push(`/colaboradores/email?ids=${ids}`);
+  };
 
   const handleDelete = async (id: number, nombre: string) => {
     if (!confirm(`¿Eliminar al colaborador "${nombre}"?`)) return;
@@ -272,14 +296,27 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
               {label}
             </label>
           ))}
-          {hayFiltros && (
-            <button
-              onClick={limpiarFiltros}
-              className="ml-auto text-xs text-slate-400 hover:text-slate-600 underline whitespace-nowrap"
-            >
-              Limpiar filtros
-            </button>
-          )}
+          <div className="ml-auto flex items-center gap-3">
+            {selected.size > 0 && (
+              <button
+                onClick={handleEmail}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                Email ({selected.size})
+              </button>
+            )}
+            {hayFiltros && (
+              <button
+                onClick={limpiarFiltros}
+                className="text-xs text-slate-400 hover:text-slate-600 underline whitespace-nowrap"
+              >
+                Limpiar filtros
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -302,6 +339,15 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50">
+                <th className="px-3 py-3 w-px">
+                  <input
+                    type="checkbox"
+                    checked={allFilteredSelected}
+                    onChange={toggleSelectAll}
+                    className="w-4 h-4 rounded accent-blue-600 cursor-pointer"
+                    title="Seleccionar todos"
+                  />
+                </th>
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold w-1/4">Nombre</th>
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold w-[12%] hidden md:table-cell">Edad / Barrio</th>
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold w-[20%] hidden lg:table-cell">Puesto Votación</th>
@@ -313,8 +359,16 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
                 <tr
                   key={c.id}
                   onClick={() => router.push(`/colaboradores/${c.id}`)}
-                  className="hover:bg-blue-50 cursor-pointer transition-colors"
+                  className={`cursor-pointer transition-colors ${selected.has(c.id) ? 'bg-blue-50' : 'hover:bg-blue-50'}`}
                 >
+                  <td className="px-3 py-3.5" onClick={e => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={selected.has(c.id)}
+                      onChange={() => toggleSelect(c.id)}
+                      className="w-4 h-4 rounded accent-blue-600 cursor-pointer"
+                    />
+                  </td>
                   <td className="px-5 py-3.5">
                     <p className={`font-medium ${c.sexo === 'M' ? 'text-blue-700' : 'text-rose-600'}`}>
                       {c.apellidos}, {c.nombre}
