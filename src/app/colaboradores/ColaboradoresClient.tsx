@@ -339,7 +339,7 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50">
-                <th className="px-3 py-3 w-px">
+                <th className="px-3 py-3 w-px text-left">
                   <input
                     type="checkbox"
                     checked={allFilteredSelected}

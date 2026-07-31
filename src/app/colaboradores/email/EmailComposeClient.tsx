@@ -33,14 +33,21 @@ export default function EmailComposeClient({ recipients }: { recipients: Recipie
       body: JSON.stringify({ recipients: withEmail, subject, body }),
     });
 
-    const data = await res.json();
     setSending(false);
 
-    if (!res.ok) {
-      setError(data.error ?? 'Error al enviar');
+    let data: Record<string, unknown>;
+    try {
+      data = await res.json();
+    } catch {
+      setError(`Error del servidor (${res.status} ${res.statusText}). Revisa la consola del servidor.`);
       return;
     }
-    setResult(data);
+
+    if (!res.ok) {
+      setError((data.error as string) ?? 'Error al enviar');
+      return;
+    }
+    setResult(data as never);
   }
 
   return (
