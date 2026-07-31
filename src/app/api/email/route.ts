@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     const results = await Promise.allSettled(
       recipients.map(r =>
         transporter.sendMail({
-          from: `"Campaña Política" <${process.env.SMTP_USER}>`,
+          from: `"Campaña Política" <${process.env.SMTP_FROM ?? process.env.SMTP_USER}>`,
           to: `${r.apellidos}, ${r.nombre} <${r.email}>`,
           subject: subject.trim(),
           text: body.trim(),
