@@ -41,9 +41,13 @@ export async function POST(req: NextRequest) {
     );
 
     const sent = results.filter(r => r.status === 'fulfilled').length;
-    const failed = results.filter(r => r.status === 'rejected').length;
+    const failures = results
+      .map((r, i) => r.status === 'rejected'
+        ? { email: recipients[i].email, nombre: `${recipients[i].apellidos}, ${recipients[i].nombre}`, error: (r as PromiseRejectedResult).reason?.message ?? 'Error desconocido' }
+        : null)
+      .filter(Boolean);
 
-    return NextResponse.json({ sent, failed });
+    return NextResponse.json({ sent, failed: failures.length, failures });
   } catch (error) {
     console.error('[email]', error);
     return NextResponse.json({ error: 'Error al enviar correos' }, { status: 500 });

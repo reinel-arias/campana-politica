@@ -14,7 +14,7 @@ export default function EmailComposeClient({ recipients }: { recipients: Recipie
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
-  const [result, setResult] = useState<{ sent: number; failed: number } | null>(null);
+  const [result, setResult] = useState<{ sent: number; failed: number; failures?: { email: string; nombre: string; error: string }[] } | null>(null);
   const [error, setError] = useState('');
 
   const withEmail = recipients.filter(r => r.email?.trim());
@@ -84,9 +84,23 @@ export default function EmailComposeClient({ recipients }: { recipients: Recipie
 
       {/* Resultado */}
       {result && (
-        <div className="p-4 bg-green-50 border border-green-200 rounded-xl text-sm text-green-800">
-          ✓ Enviado a <strong>{result.sent}</strong> colaboradores
-          {result.failed > 0 && <span className="text-red-600"> · {result.failed} fallaron</span>}
+        <div className="space-y-2">
+          {result.sent > 0 && (
+            <div className="p-4 bg-green-50 border border-green-200 rounded-xl text-sm text-green-800">
+              ✓ Enviado correctamente a <strong>{result.sent}</strong> colaboradores
+            </div>
+          )}
+          {result.failures && result.failures.length > 0 && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-sm space-y-2">
+              <p className="font-semibold text-red-700">Fallaron {result.failures.length} envíos:</p>
+              {result.failures.map((f, i) => (
+                <div key={i} className="text-red-600">
+                  <span className="font-medium">{f.nombre}</span> — {f.email}
+                  <p className="text-xs text-red-400 mt-0.5">{f.error}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
       {error && (
