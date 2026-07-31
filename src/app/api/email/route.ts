@@ -47,6 +47,10 @@ export async function POST(req: NextRequest) {
         : null)
       .filter(Boolean);
 
+    if (failures.length > 0) {
+      console.error('[email] Fallos al enviar:', JSON.stringify(failures, null, 2));
+    }
+
     return NextResponse.json({ sent, failed: failures.length, failures });
   } catch (error) {
     console.error('[email]', error);
