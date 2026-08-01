@@ -42,16 +42,21 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const results = await Promise.allSettled(
-      recipients.map(r =>
-        transporter.sendMail({
-          from: `"Anuncios Pereira" <${process.env.SMTP_FROM ?? process.env.SMTP_USER}>`,
-          to: `${r.apellidos}, ${r.nombre} <${r.email}>`,
-          subject: applyPlaceholders(subject.trim(), r),
-          text: applyPlaceholders(body.trim(), r),
-        })
-      )
-    );
+    const delayMs = parseInt(process.env.EMAIL_DELAY_MS ?? '200', 10);
+    const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
+
+    const results: PromiseSettledResult<unknown>[] = [];
+    for (const [i, r] of recipients.entries()) {
+      if (i > 0 && delayMs > 0) await sleep(delayMs);
+      const result = await transporter.sendMail({
+        from: `"Anuncios Pereira" <${process.env.SMTP_FROM ?? process.env.SMTP_USER}>`,
+        to: `${r.apellidos}, ${r.nombre} <${r.email}>`,
+        subject: applyPlaceholders(subject.trim(), r),
+        text: applyPlaceholders(body.trim(), r),
+      }).then(v => ({ status: 'fulfilled' as const, value: v }))
+        .catch(e => ({ status: 'rejected' as const, reason: e }));
+      results.push(result);
+    }
 
     const sent = results.filter(r => r.status === 'fulfilled').length;
     const failures = results
