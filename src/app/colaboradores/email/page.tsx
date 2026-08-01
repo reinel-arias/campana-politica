@@ -11,13 +11,25 @@ interface Recipient {
   apellidos: string;
   email: string;
   sexo: 'M' | 'F';
+  direccion: string | null;
+  barrio_nombre: string | null;
+  comuna_nombre: string | null;
+  puesto_nombre: string | null;
 }
 
 async function getRecipients(ids: number[]): Promise<Recipient[]> {
   if (!ids.length) return [];
   const placeholders = ids.map(() => '?').join(',');
   const [rows] = await pool.query<RowDataPacket[]>(
-    `SELECT id, nombre, apellidos, email, sexo FROM colaboradores WHERE id IN (${placeholders}) ORDER BY apellidos, nombre`,
+    `SELECT c.id, c.nombre, c.apellidos, c.email, c.sexo, c.direccion,
+            b.nombre AS barrio_nombre, co.nombre AS comuna_nombre,
+            pv.nombre AS puesto_nombre
+     FROM colaboradores c
+     LEFT JOIN barrios b ON c.barrio_id = b.id
+     LEFT JOIN comunas co ON b.comuna_id = co.id
+     LEFT JOIN puestos_votacion pv ON c.puesto_votacion_id = pv.id
+     WHERE c.id IN (${placeholders})
+     ORDER BY c.apellidos, c.nombre`,
     ids,
   );
   return rows as Recipient[];

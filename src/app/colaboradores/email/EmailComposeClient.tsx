@@ -9,16 +9,24 @@ interface Recipient {
   apellidos: string;
   email: string;
   sexo: 'M' | 'F';
+  direccion: string | null;
+  barrio_nombre: string | null;
+  comuna_nombre: string | null;
+  puesto_nombre: string | null;
 }
 
 const PLACEHOLDERS = [
-  { ph: '$nombre',         m: 'nombre',    f: 'nombre' },
-  { ph: '$apellido',       m: 'apellido',  f: 'apellido' },
-  { ph: '$nombre-completo',m: 'nombre apellido', f: 'nombre apellido' },
-  { ph: '$o',              m: 'o',         f: 'a' },
-  { ph: '$a',              m: '(nada)',     f: 'a' },
-  { ph: '$sexo',           m: 'hombre',    f: 'mujer' },
-  { ph: '$genero',         m: 'masculino', f: 'femenina' },
+  { ph: '$nombre',          m: 'nombre',         f: 'nombre' },
+  { ph: '$apellido',        m: 'apellido',        f: 'apellido' },
+  { ph: '$nombre-completo', m: 'nombre apellido', f: 'nombre apellido' },
+  { ph: '$o',               m: 'o',               f: 'a' },
+  { ph: '$a',               m: '(nada)',           f: 'a' },
+  { ph: '$sexo',            m: 'hombre',           f: 'mujer' },
+  { ph: '$genero',          m: 'masculino',        f: 'femenino' },
+  { ph: '$direccion',       m: 'dirección',        f: 'dirección' },
+  { ph: '$barrio',          m: 'barrio',           f: 'barrio' },
+  { ph: '$comuna',          m: 'comuna',           f: 'comuna' },
+  { ph: '$puesto',          m: 'puesto votación',  f: 'puesto votación' },
 ];
 
 export default function EmailComposeClient({ recipients }: { recipients: Recipient[] }) {

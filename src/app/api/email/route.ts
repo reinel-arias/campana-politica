@@ -6,6 +6,10 @@ interface Recipient {
   apellidos: string;
   email: string;
   sexo: 'M' | 'F';
+  direccion: string | null;
+  barrio_nombre: string | null;
+  comuna_nombre: string | null;
+  puesto_nombre: string | null;
 }
 
 function applyPlaceholders(text: string, r: Recipient): string {
@@ -17,7 +21,11 @@ function applyPlaceholders(text: string, r: Recipient): string {
     .replace(/\$sexo/g, f ? 'mujer' : 'hombre')
     .replace(/\$genero/g, f ? 'femenino' : 'masculino')
     .replace(/\$o/g, f ? 'a' : 'o')
-    .replace(/\$a/g, f ? 'a' : '');
+    .replace(/\$a/g, f ? 'a' : '')
+    .replace(/\$direccion/g, r.direccion ?? '')
+    .replace(/\$barrio/g, r.barrio_nombre ?? '')
+    .replace(/\$comuna/g, r.comuna_nombre ?? '')
+    .replace(/\$puesto/g, r.puesto_nombre ?? '');
 }
 
 export async function POST(req: NextRequest) {
