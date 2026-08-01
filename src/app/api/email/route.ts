@@ -15,7 +15,7 @@ function applyPlaceholders(text: string, r: Recipient): string {
     .replace(/\$apellido/g, r.apellidos)
     .replace(/\$nombre/g, r.nombre)
     .replace(/\$sexo/g, f ? 'mujer' : 'hombre')
-    .replace(/\$genero/g, f ? 'femenina' : 'masculino')
+    .replace(/\$genero/g, f ? 'femenino' : 'masculino')
     .replace(/\$o/g, f ? 'a' : 'o')
     .replace(/\$a/g, f ? 'a' : '');
 }
