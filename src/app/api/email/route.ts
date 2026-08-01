@@ -5,6 +5,19 @@ interface Recipient {
   nombre: string;
   apellidos: string;
   email: string;
+  sexo: 'M' | 'F';
+}
+
+function applyPlaceholders(text: string, r: Recipient): string {
+  const f = r.sexo === 'F';
+  return text
+    .replace(/\$nombre-completo/g, `${r.nombre} ${r.apellidos}`)
+    .replace(/\$apellido/g, r.apellidos)
+    .replace(/\$nombre/g, r.nombre)
+    .replace(/\$sexo/g, f ? 'mujer' : 'hombre')
+    .replace(/\$genero/g, f ? 'femenina' : 'masculino')
+    .replace(/\$o/g, f ? 'a' : 'o')
+    .replace(/\$a/g, f ? 'a' : '');
 }
 
 export async function POST(req: NextRequest) {
@@ -34,8 +47,8 @@ export async function POST(req: NextRequest) {
         transporter.sendMail({
           from: `"Anuncios Pereira" <${process.env.SMTP_FROM ?? process.env.SMTP_USER}>`,
           to: `${r.apellidos}, ${r.nombre} <${r.email}>`,
-          subject: subject.trim(),
-          text: body.trim(),
+          subject: applyPlaceholders(subject.trim(), r),
+          text: applyPlaceholders(body.trim(), r),
         })
       )
     );

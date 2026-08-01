@@ -8,7 +8,18 @@ interface Recipient {
   nombre: string;
   apellidos: string;
   email: string;
+  sexo: 'M' | 'F';
 }
+
+const PLACEHOLDERS = [
+  { ph: '$nombre',         m: 'nombre',    f: 'nombre' },
+  { ph: '$apellido',       m: 'apellido',  f: 'apellido' },
+  { ph: '$nombre-completo',m: 'nombre apellido', f: 'nombre apellido' },
+  { ph: '$o',              m: 'o',         f: 'a' },
+  { ph: '$a',              m: '(nada)',     f: 'a' },
+  { ph: '$sexo',           m: 'hombre',    f: 'mujer' },
+  { ph: '$genero',         m: 'masculino', f: 'femenina' },
+];
 
 export default function EmailComposeClient({ recipients }: { recipients: Recipient[] }) {
   const [subject, setSubject] = useState('');
@@ -113,6 +124,31 @@ export default function EmailComposeClient({ recipients }: { recipients: Recipie
       {error && (
         <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">{error}</div>
       )}
+
+      {/* Referencia de placeholders */}
+      <details className="bg-slate-50 border border-slate-200 rounded-xl text-xs">
+        <summary className="px-4 py-2.5 cursor-pointer font-medium text-slate-600 select-none">
+          Placeholders disponibles
+        </summary>
+        <table className="w-full border-t border-slate-200">
+          <thead>
+            <tr className="text-left text-slate-500">
+              <th className="px-4 py-2 font-semibold">Placeholder</th>
+              <th className="px-4 py-2 font-semibold">Masculino</th>
+              <th className="px-4 py-2 font-semibold">Femenino</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {PLACEHOLDERS.map(p => (
+              <tr key={p.ph}>
+                <td className="px-4 py-1.5 font-mono text-blue-700">{p.ph}</td>
+                <td className="px-4 py-1.5 text-slate-600">{p.m}</td>
+                <td className="px-4 py-1.5 text-slate-600">{p.f}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </details>
 
       {/* Formulario */}
       {withEmail.length === 0 ? (
