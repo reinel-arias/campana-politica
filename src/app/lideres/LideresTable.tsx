@@ -8,6 +8,13 @@ import { Lider } from '@/types';
 export default function LideresTable({ lideres }: { lideres: Lider[] }) {
   const router = useRouter();
   const [deleting, setDeleting] = useState<number | null>(null);
+  const [query, setQuery] = useState('');
+
+  const filtrados = query.trim()
+    ? lideres.filter(l =>
+        `${l.nombre} ${l.apellidos}`.toLowerCase().includes(query.toLowerCase())
+      )
+    : lideres;
 
   const handleDelete = async (e: React.MouseEvent, lider: Lider) => {
     e.stopPropagation();
@@ -26,6 +33,14 @@ export default function LideresTable({ lideres }: { lideres: Lider[] }) {
   };
 
   return (
+    <div className="space-y-4">
+      <input
+        type="text"
+        value={query}
+        onChange={e => setQuery(e.target.value)}
+        placeholder="Buscar por nombre..."
+        className="w-full max-w-xs border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
     <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
       <table className="w-full text-sm">
         <thead>
@@ -38,7 +53,7 @@ export default function LideresTable({ lideres }: { lideres: Lider[] }) {
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-100">
-          {lideres.map((lider) => (
+          {filtrados.map((lider) => (
             <tr
               key={lider.id}
               onClick={() => router.push(`/lideres/${lider.id}`)}
@@ -46,7 +61,7 @@ export default function LideresTable({ lideres }: { lideres: Lider[] }) {
             >
               <td className="px-5 py-3.5 text-slate-500 font-mono text-xs">{lider.cedula}</td>
               <td className="px-5 py-3.5">
-                <p className="font-medium text-slate-800">{lider.apellidos}, {lider.nombre}</p>
+                <p className="font-medium text-slate-800">{lider.nombre} {lider.apellidos}</p>
                 {lider.direccion && <p className="text-xs text-slate-400 mt-0.5">{lider.direccion}</p>}
               </td>
               <td className="px-5 py-3.5 text-slate-500 hidden sm:table-cell">{lider.telefono}</td>
@@ -80,6 +95,7 @@ export default function LideresTable({ lideres }: { lideres: Lider[] }) {
           ))}
         </tbody>
       </table>
+    </div>
     </div>
   );
 }

@@ -12,7 +12,7 @@ async function getLideres(): Promise<Lider[]> {
     FROM lideres l
     LEFT JOIN colaboradores c ON c.lider_cedula = l.cedula
     GROUP BY l.id
-    ORDER BY l.apellidos, l.nombre
+    ORDER BY l.nombre, l.apellidos
   `);
   return rows as Lider[];
 }
