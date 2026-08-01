@@ -112,6 +112,7 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
   const [barrioFiltro, setBarrioFiltro] = useState(selectedBarrio);
   const [puestoFiltro, setPuestoFiltro] = useState(selectedPuesto);
   const [habFiltros, setHabFiltros] = useState<Set<HabKey>>(new Set());
+  const [nombreFiltro, setNombreFiltro] = useState('');
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [deleting, setDeleting] = useState<number | null>(null);
 
@@ -158,6 +159,7 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
 
   const limpiarFiltros = () => {
     setHabFiltros(new Set());
+    setNombreFiltro('');
     setLiderFiltro('');
     setComunaFiltro('');
     setBarrioFiltro('');
@@ -169,13 +171,13 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
     ? barrios.filter((b) => b.comuna_id.toString() === comunaFiltro)
     : barrios;
 
-  const hayFiltros = liderFiltro || comunaFiltro || barrioFiltro || puestoFiltro || habFiltros.size > 0;
+  const hayFiltros = liderFiltro || comunaFiltro || barrioFiltro || puestoFiltro || habFiltros.size > 0 || nombreFiltro;
 
-  const filtrados = habFiltros.size === 0
-    ? colaboradores
-    : colaboradores.filter((c) =>
-        Array.from(habFiltros).every((key) => getHab(c, key))
-      );
+  const filtrados = colaboradores.filter((c) => {
+    if (nombreFiltro.trim() && !`${c.nombre} ${c.apellidos}`.toLowerCase().includes(nombreFiltro.toLowerCase())) return false;
+    if (habFiltros.size > 0 && !Array.from(habFiltros).every((key) => getHab(c, key))) return false;
+    return true;
+  });
 
   const allFilteredSelected = filtrados.length > 0 && filtrados.every(c => selected.has(c.id));
 
@@ -214,6 +216,15 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
       {/* Barra de filtros */}
       <div className="mb-5 bg-white border border-slate-200 rounded-xl p-4 flex flex-col gap-3">
         <div className="flex flex-wrap gap-4 items-center">
+          {/* Filtro por nombre */}
+          <input
+            type="text"
+            value={nombreFiltro}
+            onChange={e => setNombreFiltro(e.target.value)}
+            placeholder="Buscar por nombre..."
+            className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[200px]"
+          />
+
           {/* Filtro por líder */}
           <div className="flex items-center gap-2">
             <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap">Líder</label>
