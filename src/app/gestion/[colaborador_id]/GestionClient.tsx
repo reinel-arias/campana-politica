@@ -120,7 +120,7 @@ export default function GestionClient({ colaborador, initialGestiones }: Props) 
           <div><span className="font-medium">Barrio:</span> {colaborador.barrio_nombre ?? '—'}</div>
           {colaborador.lider_nombre && (
             <div className="col-span-2 sm:col-span-3">
-              <span className="font-medium">Líder:</span> {colaborador.lider_apellidos}, {colaborador.lider_nombre}
+              <span className="font-medium">Líder:</span> {colaborador.lider_nombre} {colaborador.lider_apellidos}
             </div>
           )}
         </div>

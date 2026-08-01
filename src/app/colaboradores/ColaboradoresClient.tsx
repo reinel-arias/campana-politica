@@ -225,7 +225,7 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
               <option value="">Todos</option>
               {lideres.map((l) => (
                 <option key={l.cedula} value={l.cedula}>
-                  {l.apellidos}, {l.nombre}
+                  {l.nombre} {l.apellidos}
                 </option>
               ))}
             </select>

@@ -104,7 +104,7 @@ function LiderCard({ lider }: { lider: Lider }) {
     <div className="bg-white border border-slate-200 rounded-xl p-5 hover:shadow-sm transition-shadow">
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="font-semibold text-slate-800">{lider.apellidos}, {lider.nombre}</h3>
+          <h3 className="font-semibold text-slate-800">{lider.nombre} {lider.apellidos}</h3>
           <p className="text-xs text-slate-400 mt-0.5">CC {lider.cedula}</p>
         </div>
         <span className="bg-blue-100 text-blue-700 text-xs font-semibold px-2.5 py-1 rounded-full">
