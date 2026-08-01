@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
       const r = recipients[i];
       if (i > 0 && delayMs > 0) await sleep(delayMs);
       const result = await transporter.sendMail({
-        from: `"Anuncios Pereira" <${process.env.SMTP_FROM ?? process.env.SMTP_USER}>`,
+        from: `"${process.env.SMTP_FROM_NAME ?? 'Anuncios'}" <${process.env.SMTP_FROM ?? process.env.SMTP_USER}>`,
         to: `${r.apellidos}, ${r.nombre} <${r.email}>`,
         subject: applyPlaceholders(subject.trim(), r),
         text: applyPlaceholders(body.trim(), r),
