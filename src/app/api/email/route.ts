@@ -46,7 +46,8 @@ export async function POST(req: NextRequest) {
     const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
 
     const results: PromiseSettledResult<unknown>[] = [];
-    for (const [i, r] of recipients.entries()) {
+    for (let i = 0; i < recipients.length; i++) {
+      const r = recipients[i];
       if (i > 0 && delayMs > 0) await sleep(delayMs);
       const result = await transporter.sendMail({
         from: `"Anuncios Pereira" <${process.env.SMTP_FROM ?? process.env.SMTP_USER}>`,
