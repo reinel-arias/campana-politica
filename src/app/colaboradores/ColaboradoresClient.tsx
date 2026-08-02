@@ -202,6 +202,11 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
     router.push(`/colaboradores/email?ids=${ids}`);
   };
 
+  const handleSms = () => {
+    const ids = Array.from(selected).join(',');
+    router.push(`/colaboradores/sms?ids=${ids}`);
+  };
+
   const handleDelete = async (id: number, nombre: string) => {
     if (!confirm(`¿Eliminar al colaborador "${nombre}"?`)) return;
     setDeleting(id);
@@ -309,15 +314,26 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
           ))}
           <div className="ml-auto flex items-center gap-3">
             {selected.size > 0 && (
-              <button
-                onClick={handleEmail}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
-              >
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                Email ({selected.size})
-              </button>
+              <>
+                <button
+                  onClick={handleEmail}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  Email ({selected.size})
+                </button>
+                <button
+                  onClick={handleSms}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                  </svg>
+                  SMS ({selected.size})
+                </button>
+              </>
             )}
             {hayFiltros && (
               <button
