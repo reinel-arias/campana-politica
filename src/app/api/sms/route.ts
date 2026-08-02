@@ -53,10 +53,11 @@ export async function POST(req: NextRequest) {
     for (let i = 0; i < recipients.length; i++) {
       const r = recipients[i];
       if (i > 0 && delayMs > 0) await sleep(delayMs);
+      const to = formatPhone(r.telefono);
       const result = await client.messages.create({
         body: applyPlaceholders(body.trim(), r),
         from: process.env.TWILIO_FROM!,
-        to: formatPhone(r.telefono),
+        to,
       }).then(v => ({ status: 'fulfilled' as const, value: v }))
         .catch(e => ({ status: 'rejected' as const, reason: e }));
       results.push(result);
