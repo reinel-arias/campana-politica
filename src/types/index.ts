@@ -18,6 +18,9 @@ export interface Lider {
   apellidos: string;
   direccion: string;
   telefono: string;
+  email?: string | null;
+  usuario?: string | null;
+  clave?: string | null;
   creado_en?: string;
   total_colaboradores?: number;
 }
@@ -59,6 +62,9 @@ export interface LiderFormData {
   apellidos: string;
   direccion: string;
   telefono: string;
+  email?: string;
+  usuario?: string;
+  clave?: string;
 }
 
 export interface Gestion {

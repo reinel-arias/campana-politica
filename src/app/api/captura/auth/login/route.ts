@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { readUsers, createToken } from '@/lib/auth';
+import { RowDataPacket } from 'mysql2';
+import pool from '@/lib/db';
+import { createToken } from '@/lib/auth';
 
 export async function POST(req: NextRequest) {
   const { username, password } = await req.json();
@@ -8,10 +10,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Credenciales incorrectas' }, { status: 401 });
   }
 
-  const users = readUsers('capturadores.txt');
-  console.log(`[captura/login] usuarios cargados: ${users.size}, intento: "${username}"`);
+  const [rows] = await pool.query<RowDataPacket[]>(
+    'SELECT clave FROM lideres WHERE usuario = ?',
+    [username.trim()]
+  );
 
-  if (users.get(username) !== password) {
+  if (rows.length === 0 || rows[0].clave !== password) {
     return NextResponse.json({ error: 'Credenciales incorrectas' }, { status: 401 });
   }
 
@@ -20,7 +24,7 @@ export async function POST(req: NextRequest) {
     httpOnly: true,
     sameSite: 'lax',
     path: '/',
-    maxAge: 60 * 60 * 8, // 8 horas
+    maxAge: 60 * 60 * 8,
   });
   return res;
 }

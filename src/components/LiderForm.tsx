@@ -11,6 +11,9 @@ const schema = z.object({
   apellidos: z.string().min(2, 'Mínimo 2 caracteres').max(100),
   direccion: z.string().max(255),
   telefono:  z.string().max(20),
+  email:     z.union([z.string().email('Email inválido'), z.literal('')]),
+  usuario:   z.string().max(100),
+  clave:     z.string().max(255),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -30,6 +33,9 @@ export default function LiderForm({ defaultValues, onSubmit, isLoading }: Props)
       apellidos: defaultValues?.apellidos ?? '',
       direccion: defaultValues?.direccion ?? '',
       telefono:  defaultValues?.telefono  ?? '',
+      email:     defaultValues?.email     ?? '',
+      usuario:   defaultValues?.usuario   ?? '',
+      clave:     '',
     },
   });
 
@@ -52,6 +58,21 @@ export default function LiderForm({ defaultValues, onSubmit, isLoading }: Props)
       <Field label="Dirección" error={errors.direccion?.message}>
         <input {...register('direccion')} placeholder="Dirección completa" className={inputCls(!!errors.direccion)} />
       </Field>
+      <Field label="Correo electrónico" error={errors.email?.message}>
+        <input {...register('email')} type="email" placeholder="correo@ejemplo.com" className={inputCls(!!errors.email)} />
+      </Field>
+
+      <div className="border-t border-slate-100 pt-5">
+        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4">Acceso al portal de captura</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <Field label="Usuario" error={errors.usuario?.message}>
+            <input {...register('usuario')} placeholder="usuario_captura" autoComplete="off" className={inputCls(!!errors.usuario)} />
+          </Field>
+          <Field label="Clave" error={errors.clave?.message}>
+            <input {...register('clave')} type="password" placeholder={defaultValues?.usuario ? 'Dejar en blanco para no cambiar' : 'Clave de acceso'} autoComplete="new-password" className={inputCls(!!errors.clave)} />
+          </Field>
+        </div>
+      </div>
 
       <div className="pt-2">
         <button

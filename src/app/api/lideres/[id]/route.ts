@@ -21,15 +21,27 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const body = await req.json();
-    const { cedula, nombre, apellidos, direccion, telefono } = body;
+    const { cedula, nombre, apellidos, direccion, telefono, email, usuario, clave } = body;
 
     if (!cedula || !nombre || !apellidos) {
       return NextResponse.json({ error: 'Cédula, nombre y apellidos son requeridos' }, { status: 400 });
     }
 
+    const fields = ['cedula=?', 'nombre=?', 'apellidos=?', 'direccion=?', 'telefono=?', 'email=?', 'usuario=?'];
+    const values: unknown[] = [
+      cedula.trim(), nombre.trim(), apellidos.trim(),
+      (direccion || '').trim(), (telefono || '').trim(),
+      email?.trim() || null, usuario?.trim() || null,
+    ];
+    if (clave?.trim()) {
+      fields.push('clave=?');
+      values.push(clave.trim());
+    }
+    values.push(params.id);
+
     const [result] = await pool.query<ResultSetHeader>(
-      'UPDATE lideres SET cedula=?, nombre=?, apellidos=?, direccion=?, telefono=? WHERE id=?',
-      [cedula.trim(), nombre.trim(), apellidos.trim(), (direccion || '').trim(), (telefono || '').trim(), params.id]
+      `UPDATE lideres SET ${fields.join(', ')} WHERE id=?`,
+      values
     );
 
     if (result.affectedRows === 0) {
@@ -37,9 +49,10 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
-    const mysqlError = error as { code?: string };
+    const mysqlError = error as { code?: string; message?: string };
     if (mysqlError.code === 'ER_DUP_ENTRY') {
-      return NextResponse.json({ error: 'Ya existe un líder con esa cédula' }, { status: 409 });
+      const msg = mysqlError.message?.includes('usuario') ? 'Ya existe un líder con ese usuario' : 'Ya existe un líder con esa cédula';
+      return NextResponse.json({ error: msg }, { status: 409 });
     }
     console.error(error);
     return NextResponse.json({ error: 'Error al actualizar líder' }, { status: 500 });
