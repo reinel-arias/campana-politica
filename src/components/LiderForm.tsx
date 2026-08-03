@@ -1,6 +1,7 @@
 'use client';
 
 import { useForm } from 'react-hook-form';
+import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { LiderFormData } from '@/types';
@@ -25,6 +26,7 @@ interface Props {
 }
 
 export default function LiderForm({ defaultValues, onSubmit, isLoading }: Props) {
+  const [showClave, setShowClave] = useState(false);
   const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -35,7 +37,7 @@ export default function LiderForm({ defaultValues, onSubmit, isLoading }: Props)
       telefono:  defaultValues?.telefono  ?? '',
       email:     defaultValues?.email     ?? '',
       usuario:   defaultValues?.usuario   ?? '',
-      clave:     '',
+      clave:     defaultValues?.clave ?? '',
     },
   });
 
@@ -69,7 +71,22 @@ export default function LiderForm({ defaultValues, onSubmit, isLoading }: Props)
             <input {...register('usuario')} placeholder="usuario_captura" autoComplete="off" className={inputCls(!!errors.usuario)} />
           </Field>
           <Field label="Clave" error={errors.clave?.message}>
-            <input {...register('clave')} type="password" placeholder={defaultValues?.usuario ? 'Dejar en blanco para no cambiar' : 'Clave de acceso'} autoComplete="new-password" className={inputCls(!!errors.clave)} />
+            <div className="relative">
+              <input
+                {...register('clave')}
+                type={showClave ? 'text' : 'password'}
+                placeholder="Clave de acceso"
+                autoComplete="new-password"
+                className={`${inputCls(!!errors.clave)} pr-24`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowClave(v => !v)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-blue-600 hover:text-blue-800 font-medium"
+              >
+                {showClave ? 'Ocultar' : 'Mostrar clave'}
+              </button>
+            </div>
           </Field>
         </div>
       </div>
