@@ -62,9 +62,9 @@ export interface LiderFormData {
   apellidos: string;
   direccion: string;
   telefono: string;
-  email?: string;
-  usuario?: string;
-  clave?: string;
+  email?: string | null;
+  usuario?: string | null;
+  clave?: string | null;
 }
 
 export interface Gestion {
