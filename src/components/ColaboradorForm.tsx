@@ -40,9 +40,10 @@ interface Props {
   zonas: Zona[];
   onSubmit: (data: FormValues) => Promise<void>;
   isLoading?: boolean;
+  hideLider?: boolean;
 }
 
-export default function ColaboradorForm({ defaultValues, lideres, comunas, zonas, onSubmit, isLoading }: Props) {
+export default function ColaboradorForm({ defaultValues, lideres, comunas, zonas, onSubmit, isLoading, hideLider }: Props) {
   const [selectedComunaId, setSelectedComunaId] = useState<string>(
     defaultValues?.initial_comuna_id?.toString() ?? ''
   );
@@ -223,14 +224,19 @@ export default function ColaboradorForm({ defaultValues, lideres, comunas, zonas
         </Field>
       </div>
 
-      <Field label="Líder asignado *" error={errors.lider_cedula?.message}>
-        <select {...register('lider_cedula')} className={inputCls(!!errors.lider_cedula)}>
-          <option value="">Seleccionar líder...</option>
-          {lideres.map(l => (
-            <option key={l.cedula} value={l.cedula}>{l.apellidos}, {l.nombre} — {l.cedula}</option>
-          ))}
-        </select>
-      </Field>
+      {hideLider
+        ? <input type="hidden" {...register('lider_cedula')} />
+        : (
+          <Field label="Líder asignado *" error={errors.lider_cedula?.message}>
+            <select {...register('lider_cedula')} className={inputCls(!!errors.lider_cedula)}>
+              <option value="">Seleccionar líder...</option>
+              {lideres.map(l => (
+                <option key={l.cedula} value={l.cedula}>{l.apellidos}, {l.nombre} — {l.cedula}</option>
+              ))}
+            </select>
+          </Field>
+        )
+      }
 
       <div className="pt-2">
         <button

@@ -3,16 +3,9 @@ export const dynamic = 'force-dynamic';
 import { cookies } from 'next/headers';
 import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
-import { Lider, Comuna, Zona } from '@/types';
+import { Comuna, Zona } from '@/types';
 import { verifyToken } from '@/lib/auth';
 import CapturaClient from './CapturaClient';
-
-async function getLideres(): Promise<Lider[]> {
-  const [rows] = await pool.query<RowDataPacket[]>(
-    'SELECT * FROM lideres ORDER BY apellidos, nombre',
-  );
-  return rows as Lider[];
-}
 
 async function getComunas(): Promise<Comuna[]> {
   const [rows] = await pool.query<RowDataPacket[]>(
@@ -28,20 +21,21 @@ async function getZonas(): Promise<Zona[]> {
   return rows as Zona[];
 }
 
-async function getNombreLider(usuario: string): Promise<string> {
+async function getLiderByUsuario(usuario: string): Promise<{ nombre: string; apellidos: string; cedula: string } | null> {
   const [rows] = await pool.query<RowDataPacket[]>(
-    'SELECT nombre, apellidos FROM lideres WHERE usuario = ?',
+    'SELECT nombre, apellidos, cedula FROM lideres WHERE usuario = ?',
     [usuario],
   );
-  if (rows.length === 0) return usuario;
-  return `${rows[0].nombre} ${rows[0].apellidos}`;
+  return rows.length > 0 ? rows[0] as { nombre: string; apellidos: string; cedula: string } : null;
 }
 
 export default async function CapturaPage() {
   const token = cookies().get('captura-session')?.value;
   const usuario = token ? verifyToken(token) : null;
-  const nombreLider = usuario ? await getNombreLider(usuario) : '';
+  const lider = usuario ? await getLiderByUsuario(usuario) : null;
+  const nombreLider = lider ? `${lider.nombre} ${lider.apellidos}` : '';
+  const liderCedula = lider?.cedula ?? '';
 
-  const [lideres, comunas, zonas] = await Promise.all([getLideres(), getComunas(), getZonas()]);
-  return <CapturaClient lideres={lideres} comunas={comunas} zonas={zonas} nombreLider={nombreLider} />;
+  const [comunas, zonas] = await Promise.all([getComunas(), getZonas()]);
+  return <CapturaClient comunas={comunas} zonas={zonas} nombreLider={nombreLider} liderCedula={liderCedula} />;
 }

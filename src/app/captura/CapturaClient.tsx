@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ColaboradorForm from '@/components/ColaboradorForm';
-import { Lider, Comuna, Zona } from '@/types';
+import { Comuna, Zona } from '@/types';
 
 type FormValues = {
   cedula: string; nombre: string; apellidos: string;
@@ -26,13 +26,13 @@ const HAB_INICIAL: Record<HabKey, boolean> = {
 };
 
 interface Props {
-  lideres: Lider[];
   comunas: Comuna[];
   zonas: Zona[];
   nombreLider: string;
+  liderCedula: string;
 }
 
-export default function CapturaClient({ lideres, comunas, zonas, nombreLider }: Props) {
+export default function CapturaClient({ comunas, zonas, nombreLider, liderCedula }: Props) {
   const router = useRouter();
   const [habilidades, setHabilidades] = useState<Record<HabKey, boolean>>(HAB_INICIAL);
   const [success, setSuccess] = useState(false);
@@ -133,9 +133,11 @@ export default function CapturaClient({ lideres, comunas, zonas, nombreLider }: 
           <h2 className="text-base font-semibold text-slate-800 mb-5">Datos del Colaborador</h2>
           <ColaboradorForm
             key={formKey}
-            lideres={lideres}
+            lideres={[]}
             comunas={comunas}
             zonas={zonas}
+            defaultValues={{ lider_cedula: liderCedula }}
+            hideLider
             onSubmit={handleSubmit}
           />
         </div>
