@@ -29,9 +29,10 @@ interface Props {
   lideres: Lider[];
   comunas: Comuna[];
   zonas: Zona[];
+  nombreLider: string;
 }
 
-export default function CapturaClient({ lideres, comunas, zonas }: Props) {
+export default function CapturaClient({ lideres, comunas, zonas, nombreLider }: Props) {
   const router = useRouter();
   const [habilidades, setHabilidades] = useState<Record<HabKey, boolean>>(HAB_INICIAL);
   const [success, setSuccess] = useState(false);
@@ -88,7 +89,10 @@ export default function CapturaClient({ lideres, comunas, zonas }: Props) {
       <header className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
         <div>
           <h1 className="font-bold text-lg">Campaña Política</h1>
-          <p className="text-slate-400 text-xs mt-0.5">Captura de Colaboradores</p>
+          <p className="text-slate-400 text-xs mt-0.5">
+            Captura de Colaboradores
+            {nombreLider && <span className="ml-2 text-slate-300">· {nombreLider}</span>}
+          </p>
         </div>
         <button
           onClick={handleLogout}
