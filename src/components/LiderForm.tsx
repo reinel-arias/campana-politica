@@ -10,6 +10,7 @@ const schema = z.object({
   cedula:    z.string().min(5, 'Mínimo 5 caracteres').max(20),
   nombre:    z.string().min(2, 'Mínimo 2 caracteres').max(100),
   apellidos: z.string().min(2, 'Mínimo 2 caracteres').max(100),
+  sexo:      z.enum(['M', 'F', '']),
   direccion: z.string().max(255),
   telefono:  z.string().max(20),
   email:     z.union([z.string().email('Email inválido'), z.literal('')]),
@@ -33,6 +34,7 @@ export default function LiderForm({ defaultValues, onSubmit, isLoading }: Props)
       cedula:    defaultValues?.cedula    ?? '',
       nombre:    defaultValues?.nombre    ?? '',
       apellidos: defaultValues?.apellidos ?? '',
+      sexo:      (defaultValues?.sexo     ?? '') as 'M' | 'F' | '',
       direccion: defaultValues?.direccion ?? '',
       telefono:  defaultValues?.telefono  ?? '',
       email:     defaultValues?.email     ?? '',
@@ -55,6 +57,13 @@ export default function LiderForm({ defaultValues, onSubmit, isLoading }: Props)
         </Field>
         <Field label="Apellidos *" error={errors.apellidos?.message}>
           <input {...register('apellidos')} placeholder="Apellidos" className={inputCls(!!errors.apellidos)} />
+        </Field>
+        <Field label="Sexo" error={errors.sexo?.message}>
+          <select {...register('sexo')} className={inputCls(!!errors.sexo)}>
+            <option value="">Seleccionar...</option>
+            <option value="M">Masculino</option>
+            <option value="F">Femenino</option>
+          </select>
         </Field>
       </div>
       <Field label="Dirección" error={errors.direccion?.message}>

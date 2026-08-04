@@ -11,13 +11,14 @@ interface Recipient {
   apellidos: string;
   email: string;
   direccion: string;
+  sexo: 'M' | 'F' | null;
 }
 
 async function getRecipients(ids: number[]): Promise<Recipient[]> {
   if (!ids.length) return [];
   const placeholders = ids.map(() => '?').join(',');
   const [rows] = await pool.query<RowDataPacket[]>(
-    `SELECT id, nombre, apellidos, email, direccion FROM lideres WHERE id IN (${placeholders}) ORDER BY apellidos, nombre`,
+    `SELECT id, nombre, apellidos, email, direccion, sexo FROM lideres WHERE id IN (${placeholders}) ORDER BY apellidos, nombre`,
     ids,
   );
   return rows as Recipient[];

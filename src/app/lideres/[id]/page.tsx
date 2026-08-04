@@ -6,8 +6,6 @@ import Link from 'next/link';
 import LiderForm from '@/components/LiderForm';
 import { Lider } from '@/types';
 
-type LiderFormValues = { cedula: string; nombre: string; apellidos: string; direccion: string; telefono: string };
-
 export default function EditarLiderPage() {
   const router = useRouter();
   const params = useParams();
@@ -26,7 +24,7 @@ export default function EditarLiderPage() {
       .catch(() => { setError('No se pudo cargar el líder'); setLoading(false); });
   }, [id]);
 
-  const handleSubmit = async (data: LiderFormValues) => {
+  const handleSubmit = async (data: Record<string, unknown>) => {
     setSaving(true);
     setError('');
     setSuccess(false);

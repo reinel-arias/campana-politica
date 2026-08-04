@@ -9,7 +9,7 @@ export default function NuevoLiderPage() {
   const router = useRouter();
   const [error, setError] = useState('');
 
-  const handleSubmit = async (data: { cedula: string; nombre: string; apellidos: string; direccion: string; telefono: string }) => {
+  const handleSubmit = async (data: Record<string, unknown>) => {
     setError('');
     const res = await fetch('/api/lideres', {
       method: 'POST',

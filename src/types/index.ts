@@ -16,6 +16,7 @@ export interface Lider {
   cedula: string;
   nombre: string;
   apellidos: string;
+  sexo?: 'M' | 'F' | null;
   direccion: string;
   telefono: string;
   email?: string | null;
@@ -60,6 +61,7 @@ export interface LiderFormData {
   cedula: string;
   nombre: string;
   apellidos: string;
+  sexo?: 'M' | 'F' | null;
   direccion: string;
   telefono: string;
   email?: string | null;

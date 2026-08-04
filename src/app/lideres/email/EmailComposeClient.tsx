@@ -9,6 +9,7 @@ interface Recipient {
   apellidos: string;
   email: string;
   direccion: string;
+  sexo: 'M' | 'F' | null;
 }
 
 const PLACEHOLDERS = [
@@ -16,14 +17,19 @@ const PLACEHOLDERS = [
   { ph: '$apellido',        desc: 'apellido' },
   { ph: '$nombre-completo', desc: 'nombre apellido' },
   { ph: '$direccion',       desc: 'dirección' },
+  { ph: '$o',               desc: '"o" (masc.) / "a" (fem.) — ej: estimad$o' },
+  { ph: '$a',               desc: '"" (masc.) / "a" (fem.) — ej: lider$a' },
 ];
 
 function applyPlaceholders(text: string, r: Recipient): string {
+  const f = r.sexo === 'F';
   return text
     .replace(/\$nombre-completo/g, `${r.nombre} ${r.apellidos}`)
     .replace(/\$apellido/g, r.apellidos)
     .replace(/\$nombre/g, r.nombre)
-    .replace(/\$direccion/g, r.direccion ?? '');
+    .replace(/\$direccion/g, r.direccion ?? '')
+    .replace(/\$o/g, f ? 'a' : 'o')
+    .replace(/\$a/g, f ? 'a' : '');
 }
 
 export default function EmailComposeClient({ recipients }: { recipients: Recipient[] }) {

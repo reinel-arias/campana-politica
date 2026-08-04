@@ -21,16 +21,17 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { cedula, nombre, apellidos, direccion, telefono, email, usuario, clave } = body;
+    const { cedula, nombre, apellidos, sexo, direccion, telefono, email, usuario, clave } = body;
 
     if (!cedula || !nombre || !apellidos) {
       return NextResponse.json({ error: 'Cédula, nombre y apellidos son requeridos' }, { status: 400 });
     }
 
     const [result] = await pool.query<ResultSetHeader>(
-      'INSERT INTO lideres (cedula, nombre, apellidos, direccion, telefono, email, usuario, clave) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO lideres (cedula, nombre, apellidos, sexo, direccion, telefono, email, usuario, clave) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [
         cedula.trim(), nombre.trim(), apellidos.trim(),
+        sexo || null,
         (direccion || '').trim(), (telefono || '').trim(),
         email?.trim() || null, usuario?.trim() || null, clave?.trim() || null,
       ]
