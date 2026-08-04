@@ -68,7 +68,7 @@ export default function EditarLiderPage() {
           ← Volver a Líderes
         </Link>
         <h1 className="text-2xl font-bold text-slate-900 mt-3">
-          {lider.apellidos}, {lider.nombre}
+          {lider.nombre} {lider.apellidos}
         </h1>
         <p className="text-slate-400 text-sm">CC {lider.cedula}</p>
       </div>

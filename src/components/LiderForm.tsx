@@ -10,12 +10,12 @@ const schema = z.object({
   cedula:    z.string().min(5, 'Mínimo 5 caracteres').max(20),
   nombre:    z.string().min(2, 'Mínimo 2 caracteres').max(100),
   apellidos: z.string().min(2, 'Mínimo 2 caracteres').max(100),
-  sexo:      z.enum(['M', 'F', '']),
+  sexo:      z.enum(['M', 'F'], { errorMap: () => ({ message: 'Selecciona el sexo' }) }),
   direccion: z.string().max(255),
   telefono:  z.string().max(20),
   email:     z.union([z.string().email('Email inválido'), z.literal('')]),
-  usuario:   z.string().max(100),
-  clave:     z.string().max(255),
+  usuario:   z.string().min(1, 'Requerido').max(100),
+  clave:     z.string().min(1, 'Requerida').max(255),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -34,7 +34,7 @@ export default function LiderForm({ defaultValues, onSubmit, isLoading }: Props)
       cedula:    defaultValues?.cedula    ?? '',
       nombre:    defaultValues?.nombre    ?? '',
       apellidos: defaultValues?.apellidos ?? '',
-      sexo:      (defaultValues?.sexo     ?? '') as 'M' | 'F' | '',
+      sexo:      (defaultValues?.sexo ?? undefined) as 'M' | 'F' | undefined,
       direccion: defaultValues?.direccion ?? '',
       telefono:  defaultValues?.telefono  ?? '',
       email:     defaultValues?.email     ?? '',
@@ -58,7 +58,7 @@ export default function LiderForm({ defaultValues, onSubmit, isLoading }: Props)
         <Field label="Apellidos *" error={errors.apellidos?.message}>
           <input {...register('apellidos')} placeholder="Apellidos" className={inputCls(!!errors.apellidos)} />
         </Field>
-        <Field label="Sexo" error={errors.sexo?.message}>
+        <Field label="Sexo *" error={errors.sexo?.message}>
           <select {...register('sexo')} className={inputCls(!!errors.sexo)}>
             <option value="">Seleccionar...</option>
             <option value="M">Masculino</option>
@@ -76,10 +76,10 @@ export default function LiderForm({ defaultValues, onSubmit, isLoading }: Props)
       <div className="border-t border-slate-100 pt-5">
         <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4">Acceso al portal de captura</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <Field label="Usuario" error={errors.usuario?.message}>
+          <Field label="Usuario *" error={errors.usuario?.message}>
             <input {...register('usuario')} placeholder="usuario_captura" autoComplete="off" className={inputCls(!!errors.usuario)} />
           </Field>
-          <Field label="Clave" error={errors.clave?.message}>
+          <Field label="Clave *" error={errors.clave?.message}>
             <div className="relative">
               <input
                 {...register('clave')}

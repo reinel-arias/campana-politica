@@ -231,7 +231,7 @@ export default function ColaboradorForm({ defaultValues, lideres, comunas, zonas
             <select {...register('lider_cedula')} className={inputCls(!!errors.lider_cedula)}>
               <option value="">Seleccionar líder...</option>
               {lideres.map(l => (
-                <option key={l.cedula} value={l.cedula}>{l.apellidos}, {l.nombre} — {l.cedula}</option>
+                <option key={l.cedula} value={l.cedula}>{l.nombre} {l.apellidos} — {l.cedula}</option>
               ))}
             </select>
           </Field>
