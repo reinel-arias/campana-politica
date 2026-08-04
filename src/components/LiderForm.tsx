@@ -10,7 +10,7 @@ const schema = z.object({
   cedula:    z.string().min(5, 'Mínimo 5 caracteres').max(20),
   nombre:    z.string().min(2, 'Mínimo 2 caracteres').max(100),
   apellidos: z.string().min(2, 'Mínimo 2 caracteres').max(100),
-  sexo:      z.enum(['M', 'F'], { errorMap: () => ({ message: 'Selecciona el sexo' }) }),
+  sexo:      z.enum(['M', 'F'], { message: 'Selecciona el sexo' }),
   direccion: z.string().max(255),
   telefono:  z.string().max(20),
   email:     z.union([z.string().email('Email inválido'), z.literal('')]),
