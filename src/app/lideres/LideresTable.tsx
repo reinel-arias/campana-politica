@@ -123,7 +123,9 @@ export default function LideresTable({ lideres }: { lideres: Lider[] }) {
                 </td>
                 <td className="px-5 py-3.5 text-slate-500 font-mono text-xs">{lider.cedula}</td>
                 <td className="px-5 py-3.5">
-                  <p className="font-medium text-slate-800">{lider.nombre} {lider.apellidos}</p>
+                  <p className={`font-medium ${lider.sexo === 'F' ? 'text-rose-600' : 'text-blue-700'}`}>
+                    {lider.nombre} {lider.apellidos}
+                  </p>
                   {lider.direccion && <p className="text-xs text-slate-400 mt-0.5">{lider.direccion}</p>}
                 </td>
                 <td className="px-5 py-3.5 text-slate-500 hidden sm:table-cell">{lider.telefono}</td>

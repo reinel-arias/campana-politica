@@ -14,8 +14,8 @@ const schema = z.object({
   direccion: z.string().max(255),
   telefono:  z.string().max(20),
   email:     z.union([z.string().email('Email inválido'), z.literal('')]),
-  usuario:   z.string().min(1, 'Requerido').max(100),
-  clave:     z.string().min(1, 'Requerida').max(255),
+  usuario:   z.string().max(100),
+  clave:     z.string().max(255),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -76,10 +76,10 @@ export default function LiderForm({ defaultValues, onSubmit, isLoading }: Props)
       <div className="border-t border-slate-100 pt-5">
         <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-4">Acceso al portal de captura</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <Field label="Usuario *" error={errors.usuario?.message}>
+          <Field label="Usuario" error={errors.usuario?.message}>
             <input {...register('usuario')} placeholder="usuario_captura" autoComplete="off" className={inputCls(!!errors.usuario)} />
           </Field>
-          <Field label="Clave *" error={errors.clave?.message}>
+          <Field label="Clave" error={errors.clave?.message}>
             <div className="relative">
               <input
                 {...register('clave')}
