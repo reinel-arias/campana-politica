@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { cedula, nombre, apellidos, sexo, fecha_nacimiento, direccion, telefono, email, lider_cedula, barrio_id, puesto_votacion_id } = body;
 
-    if (!cedula || !nombre || !apellidos || !sexo || !fecha_nacimiento || !lider_cedula) {
+    if (!cedula || !nombre || !apellidos || !sexo || !lider_cedula) {
       return NextResponse.json({ error: 'Todos los campos requeridos deben estar completos' }, { status: 400 });
     }
     if (!['M', 'F'].includes(sexo)) {
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     const [result] = await conn.query<ResultSetHeader>(
       `INSERT INTO colaboradores (cedula, nombre, apellidos, sexo, fecha_nacimiento, direccion, telefono, email, lider_cedula, barrio_id, puesto_votacion_id)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [cedula.trim(), nombre.trim(), apellidos.trim(), sexo, fecha_nacimiento,
+      [cedula.trim(), nombre.trim(), apellidos.trim(), sexo, fecha_nacimiento || null,
        (direccion || '').trim(), (telefono || '').trim(), (email || '').trim(),
        lider_cedula, barrio_id || null, puesto_votacion_id || null]
     );

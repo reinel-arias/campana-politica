@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const SECRET = process.env.AUTH_SECRET ?? 'campana-key-2024';
 
-async function verifySession(token: string): Promise<boolean> {
+// scope debe coincidir con el de createToken en lib/auth.ts
+async function verifySession(token: string, scope: 'main' | 'captura'): Promise<boolean> {
   try {
     const raw = atob(token.replace(/-/g, '+').replace(/_/g, '/'));
     const i = raw.lastIndexOf(':');
@@ -17,7 +18,7 @@ async function verifySession(token: string): Promise<boolean> {
       false,
       ['sign'],
     );
-    const sig = await crypto.subtle.sign('HMAC', key, enc.encode(username));
+    const sig = await crypto.subtle.sign('HMAC', key, enc.encode(`${scope}:${username}`));
     const expected = Array.from(new Uint8Array(sig))
       .map((b) => b.toString(16).padStart(2, '0'))
       .join('');
@@ -44,8 +45,8 @@ export async function middleware(req: NextRequest) {
   // ── Portal de captura (páginas y API propias) ────────────────────────────
   if (pathname.startsWith('/captura') || pathname.startsWith('/api/captura')) {
     const token = req.cookies.get('captura-session')?.value;
-    if (!token || !(await verifySession(token))) {
-      return NextResponse.redirect(new URL('/captura/login', req.url));
+    if (!token || !(await verifySession(token, 'captura'))) {
+      return NextResponse.redirect(new URL('/login', req.url));
     }
     return NextResponse.next();
   }
@@ -56,8 +57,8 @@ export async function middleware(req: NextRequest) {
     const mainToken    = req.cookies.get('session')?.value;
     const capturaToken = req.cookies.get('captura-session')?.value;
     if (
-      (mainToken    && (await verifySession(mainToken)))    ||
-      (capturaToken && (await verifySession(capturaToken)))
+      (mainToken    && (await verifySession(mainToken, 'main')))    ||
+      (capturaToken && (await verifySession(capturaToken, 'captura')))
     ) {
       return NextResponse.next();
     }
@@ -66,7 +67,7 @@ export async function middleware(req: NextRequest) {
 
   // ── App principal ────────────────────────────────────────────────────────
   const token = req.cookies.get('session')?.value;
-  if (!token || !(await verifySession(token))) {
+  if (!token || !(await verifySession(token, 'main'))) {
     return NextResponse.redirect(new URL('/login', req.url));
   }
   return NextResponse.next();

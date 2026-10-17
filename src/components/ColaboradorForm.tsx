@@ -17,7 +17,7 @@ const schema = z.object({
   nombre:              z.string().min(2, 'Mínimo 2 caracteres').max(100),
   apellidos:           z.string().min(2, 'Mínimo 2 caracteres').max(100),
   sexo:                z.enum(['M', 'F']),
-  fecha_nacimiento:    z.string().min(1, 'La fecha es requerida'),
+  fecha_nacimiento:    z.string(),
   direccion:           z.string().max(255),
   telefono:            z.string().max(20),
   email:               z.string().email('Email inválido').max(255).or(z.literal('')),
@@ -135,7 +135,7 @@ export default function ColaboradorForm({ defaultValues, lideres, comunas, zonas
           </select>
         </Field>
 
-        <Field label="Fecha de Nacimiento *" error={errors.fecha_nacimiento?.message}>
+        <Field label="Fecha de Nacimiento" error={errors.fecha_nacimiento?.message}>
           <Controller
             name="fecha_nacimiento"
             control={control}

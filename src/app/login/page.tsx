@@ -26,7 +26,8 @@ export default function LoginPage() {
       setError('Usuario o contraseña incorrectos');
       return;
     }
-    router.push('/');
+    const data = await res.json();
+    router.push(data.redirect ?? '/');
     router.refresh();
   };
 

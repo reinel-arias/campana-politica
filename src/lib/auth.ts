@@ -26,21 +26,25 @@ export function verifyCredentials(username: string, password: string, filename =
   return readUsers(filename).get(username) === password;
 }
 
-function hmacHex(username: string): string {
-  return crypto.createHmac('sha256', SECRET).update(username).digest('hex');
+// Tipo de sesión: 'main' (app principal) o 'captura' (portal de líderes).
+// Va dentro de la firma para que un token de un tipo no sirva como el otro.
+export type SessionScope = 'main' | 'captura';
+
+function hmacHex(username: string, scope: SessionScope): string {
+  return crypto.createHmac('sha256', SECRET).update(`${scope}:${username}`).digest('hex');
 }
 
-export function createToken(username: string): string {
-  return Buffer.from(`${username}:${hmacHex(username)}`).toString('base64url');
+export function createToken(username: string, scope: SessionScope): string {
+  return Buffer.from(`${username}:${hmacHex(username, scope)}`).toString('base64url');
 }
 
-export function verifyToken(token: string): string | null {
+export function verifyToken(token: string, scope: SessionScope): string | null {
   try {
     const raw = Buffer.from(token, 'base64url').toString('utf-8');
     const i = raw.lastIndexOf(':');
     const username = raw.slice(0, i);
     const hash = raw.slice(i + 1);
-    return hash === hmacHex(username) ? username : null;
+    return hash === hmacHex(username, scope) ? username : null;
   } catch {
     return null;
   }

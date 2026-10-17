@@ -27,7 +27,8 @@ const HABILIDADES: { key: HabKey; label: string }[] = [
 ];
 
 
-function calcularEdad(fechaNacimiento: string): number {
+function calcularEdad(fechaNacimiento: string | null): number {
+  if (!fechaNacimiento) return 0;
   const hoy = new Date();
   const nac = new Date(fechaNacimiento);
   let edad = hoy.getFullYear() - nac.getFullYear();
@@ -207,6 +208,62 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
     router.push(`/colaboradores/sms?ids=${ids}`);
   };
 
+  const handleExportar = async () => {
+    const ExcelJS = (await import('exceljs')).default;
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('Colaboradores');
+    const siNo = (v: boolean) => (v ? 'Sí' : 'No');
+
+    ws.columns = [
+      { header: 'Cédula',           key: 'cedula',      width: 15 },
+      { header: 'Nombres',          key: 'nombre',      width: 20 },
+      { header: 'Apellidos',        key: 'apellidos',   width: 22 },
+      { header: 'Sexo',             key: 'sexo',        width: 11 },
+      { header: 'Fecha Nacimiento', key: 'fecha',       width: 17 },
+      { header: 'Edad',             key: 'edad',        width: 7 },
+      { header: 'Teléfono',         key: 'telefono',    width: 14 },
+      { header: 'Email',            key: 'email',       width: 28 },
+      { header: 'Dirección',        key: 'direccion',   width: 30 },
+      { header: 'Comuna',           key: 'comuna',      width: 20 },
+      { header: 'Barrio',           key: 'barrio',      width: 24 },
+      { header: 'Zona',             key: 'zona',        width: 9 },
+      { header: 'Puesto Votación',  key: 'puesto',      width: 32 },
+      { header: 'Líder',            key: 'lider',       width: 26 },
+      ...HABILIDADES.map(({ key, label }) => ({ header: label, key, width: 12 })),
+    ];
+
+    filtrados.forEach((c) => {
+      ws.addRow({
+        cedula:    c.cedula,
+        nombre:    c.nombre,
+        apellidos: c.apellidos,
+        sexo:      c.sexo === 'M' ? 'Masculino' : 'Femenino',
+        fecha:     c.fecha_nacimiento ? new Date(c.fecha_nacimiento).toLocaleDateString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '',
+        edad:      calcularEdad(c.fecha_nacimiento),
+        telefono:  c.telefono,
+        email:     c.email,
+        direccion: c.direccion,
+        comuna:    c.comuna_nombre ?? '',
+        barrio:    c.barrio_nombre ?? '',
+        zona:      c.zona_codigo ? `Zona ${c.zona_codigo}` : '',
+        puesto:    c.puesto_nombre ?? '',
+        lider:     `${c.lider_nombre ?? ''} ${c.lider_apellidos ?? ''}`.trim(),
+        ...Object.fromEntries(HABILIDADES.map(({ key }) => [key, siNo(getHab(c, key))])),
+      });
+    });
+    ws.getRow(1).font = { bold: true };
+
+    const buffer = await wb.xlsx.writeBuffer();
+    const url = URL.createObjectURL(new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `colaboradores_${new Date().toISOString().split('T')[0]}.xlsx`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleDelete = async (id: number, nombre: string) => {
     if (!confirm(`¿Eliminar al colaborador "${nombre}"?`)) return;
     setDeleting(id);
@@ -313,6 +370,16 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
             </label>
           ))}
           <div className="ml-auto flex items-center gap-3">
+            <button
+              onClick={handleExportar}
+              disabled={filtrados.length === 0}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 text-white text-xs font-medium rounded-lg hover:bg-emerald-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Exportar Excel
+            </button>
             {selected.size > 0 && (
               <>
                 <button

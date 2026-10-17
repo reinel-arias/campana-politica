@@ -39,7 +39,7 @@ export interface Colaborador {
   nombre: string;
   apellidos: string;
   sexo: 'M' | 'F';
-  fecha_nacimiento: string;
+  fecha_nacimiento: string | null;
   direccion: string;
   telefono: string;
   email: string;

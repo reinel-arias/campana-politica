@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS colaboradores (
   nombre           VARCHAR(100) NOT NULL,
   apellidos        VARCHAR(100) NOT NULL,
   sexo             CHAR(1)     NOT NULL COMMENT 'M o F',
-  fecha_nacimiento DATE        NOT NULL,
+  fecha_nacimiento DATE        NULL,
   direccion        VARCHAR(255) NOT NULL DEFAULT '',
   telefono         VARCHAR(20)  NOT NULL DEFAULT '',
   lider_cedula     VARCHAR(20)  NOT NULL,

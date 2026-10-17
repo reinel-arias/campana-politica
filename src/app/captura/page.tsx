@@ -1,41 +1,55 @@
 export const dynamic = 'force-dynamic';
 
-import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
-import { Comuna, Zona } from '@/types';
-import { verifyToken } from '@/lib/auth';
-import CapturaClient from './CapturaClient';
+import { getLiderDeSesion } from './lider';
+import CapturaListaClient, { ColaboradorFila } from './CapturaListaClient';
 
-async function getComunas(): Promise<Comuna[]> {
-  const [rows] = await pool.query<RowDataPacket[]>(
-    'SELECT id, nombre FROM comunas ORDER BY nombre',
-  );
-  return rows as Comuna[];
+function calcularEdad(fecha: Date | null): number {
+  if (!fecha) return 0;
+  const hoy = new Date();
+  const nac = new Date(fecha);
+  let edad = hoy.getFullYear() - nac.getFullYear();
+  const m = hoy.getMonth() - nac.getMonth();
+  if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
+  return edad;
 }
 
-async function getZonas(): Promise<Zona[]> {
-  const [rows] = await pool.query<RowDataPacket[]>(
-    'SELECT id, codigo FROM zonas ORDER BY codigo',
-  );
-  return rows as Zona[];
-}
+async function getColaboradoresDeLider(liderCedula: string): Promise<ColaboradorFila[]> {
+  const [rows] = await pool.query<RowDataPacket[]>(`
+    SELECT c.id, c.nombre, c.apellidos, c.sexo, c.telefono, c.fecha_nacimiento,
+           b.nombre AS barrio_nombre,
+           pv.nombre AS puesto_nombre, pv.codigo AS puesto_codigo, z.codigo AS zona_codigo
+    FROM colaboradores c
+    LEFT JOIN barrios b ON c.barrio_id = b.id
+    LEFT JOIN puestos_votacion pv ON c.puesto_votacion_id = pv.id
+    LEFT JOIN zonas z ON pv.zona_id = z.id
+    WHERE c.lider_cedula = ?
+    ORDER BY c.apellidos, c.nombre
+  `, [liderCedula]);
 
-async function getLiderByUsuario(usuario: string): Promise<{ nombre: string; apellidos: string; cedula: string } | null> {
-  const [rows] = await pool.query<RowDataPacket[]>(
-    'SELECT nombre, apellidos, cedula FROM lideres WHERE usuario = ?',
-    [usuario],
-  );
-  return rows.length > 0 ? rows[0] as { nombre: string; apellidos: string; cedula: string } : null;
+  return rows.map((r) => ({
+    id:            r.id,
+    nombre:        r.nombre,
+    apellidos:     r.apellidos,
+    sexo:          r.sexo,
+    telefono:      r.telefono,
+    edad:          calcularEdad(r.fecha_nacimiento),
+    barrio_nombre: r.barrio_nombre ?? null,
+    puesto:        r.puesto_nombre ? `${r.zona_codigo}-${r.puesto_codigo} ${r.puesto_nombre}` : null,
+  }));
 }
 
 export default async function CapturaPage() {
-  const token = cookies().get('captura-session')?.value;
-  const usuario = token ? verifyToken(token) : null;
-  const lider = usuario ? await getLiderByUsuario(usuario) : null;
-  const nombreLider = lider ? `${lider.nombre} ${lider.apellidos}` : '';
-  const liderCedula = lider?.cedula ?? '';
+  const lider = await getLiderDeSesion();
+  if (!lider) redirect('/login');
 
-  const [comunas, zonas] = await Promise.all([getComunas(), getZonas()]);
-  return <CapturaClient comunas={comunas} zonas={zonas} nombreLider={nombreLider} liderCedula={liderCedula} />;
+  const colaboradores = await getColaboradoresDeLider(lider.cedula);
+  return (
+    <CapturaListaClient
+      nombreLider={`${lider.nombre} ${lider.apellidos}`}
+      colaboradores={colaboradores}
+    />
+  );
 }
