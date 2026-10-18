@@ -433,7 +433,7 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50">
-                <th className="px-3 py-3 w-px text-left">
+                <th className="pl-4 pr-1 py-3 w-px whitespace-nowrap text-left">
                   <input
                     type="checkbox"
                     checked={allFilteredSelected}
@@ -442,9 +442,9 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
                     title="Seleccionar todos"
                   />
                 </th>
-                <th className="text-left px-5 py-3 text-slate-600 font-semibold w-1/4">Nombre</th>
+                <th className="text-left pl-2 pr-5 py-3 text-slate-600 font-semibold">Nombre</th>
                 <th className="text-left px-5 py-3 text-slate-600 font-semibold w-[12%] hidden md:table-cell">Edad / Barrio</th>
-                <th className="text-left px-5 py-3 text-slate-600 font-semibold w-[20%] hidden lg:table-cell">Puesto Votación</th>
+                <th className="text-left px-5 py-3 text-slate-600 font-semibold w-[20%] hidden lg:table-cell">Líder</th>
                 <th className="px-5 py-3 w-px"></th>
               </tr>
             </thead>
@@ -455,7 +455,7 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
                   onClick={() => router.push(`/colaboradores/${c.id}`)}
                   className={`cursor-pointer transition-colors ${selected.has(c.id) ? 'bg-blue-50' : 'hover:bg-blue-50'}`}
                 >
-                  <td className="px-3 py-3.5" onClick={e => e.stopPropagation()}>
+                  <td className="pl-4 pr-1 py-3.5 w-px whitespace-nowrap" onClick={e => e.stopPropagation()}>
                     <input
                       type="checkbox"
                       checked={selected.has(c.id)}
@@ -463,7 +463,7 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
                       className="w-4 h-4 rounded accent-blue-600 cursor-pointer"
                     />
                   </td>
-                  <td className="px-5 py-3.5">
+                  <td className="pl-2 pr-5 py-3.5">
                     <p className={`font-medium ${c.sexo === 'M' ? 'text-blue-700' : 'text-rose-600'}`}>
                       {c.apellidos}, {c.nombre}
                     </p>
@@ -474,8 +474,8 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
                     {c.barrio_nombre && <p className="text-slate-400 mt-0.5">{c.barrio_nombre}</p>}
                   </td>
                   <td className="px-5 py-3.5 text-slate-500 text-xs hidden lg:table-cell">
-                    {c.puesto_nombre
-                      ? <span>{c.zona_codigo}-{c.puesto_codigo} {c.puesto_nombre}</span>
+                    {c.lider_nombre
+                      ? <span>{c.lider_nombre} {c.lider_apellidos}</span>
                       : '—'}
                   </td>
                   <td className="px-5 py-3.5 text-right">
