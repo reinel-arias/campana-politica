@@ -442,9 +442,9 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
                     title="Seleccionar todos"
                   />
                 </th>
-                <th className="text-left pl-2 pr-5 py-3 text-slate-600 font-semibold">Nombre</th>
-                <th className="text-left px-5 py-3 text-slate-600 font-semibold w-[12%] hidden md:table-cell">Edad / Barrio</th>
-                <th className="text-left px-5 py-3 text-slate-600 font-semibold w-[20%] hidden lg:table-cell">Líder</th>
+                <th className="text-left pl-2 pr-5 py-3 text-slate-600 font-semibold w-px whitespace-nowrap">Nombre</th>
+                <th className="text-left px-5 py-3 text-slate-600 font-semibold w-px whitespace-nowrap hidden md:table-cell">Edad / Barrio</th>
+                <th className="text-left px-5 py-3 text-slate-600 font-semibold hidden lg:table-cell">Líder</th>
                 <th className="px-5 py-3 w-px"></th>
               </tr>
             </thead>
@@ -463,13 +463,13 @@ export default function ColaboradoresClient({ colaboradores, lideres, comunas, b
                       className="w-4 h-4 rounded accent-blue-600 cursor-pointer"
                     />
                   </td>
-                  <td className="pl-2 pr-5 py-3.5">
+                  <td className="pl-2 pr-5 py-3.5 whitespace-nowrap">
                     <p className={`font-medium ${c.sexo === 'M' ? 'text-blue-700' : 'text-rose-600'}`}>
                       {c.apellidos}, {c.nombre}
                     </p>
                     {c.telefono && <p className="text-xs text-slate-400 mt-0.5">{c.telefono}</p>}
                   </td>
-                  <td className="px-5 py-3.5 text-slate-500 text-xs hidden md:table-cell">
+                  <td className="px-5 py-3.5 text-slate-500 text-xs whitespace-nowrap hidden md:table-cell">
                     <p>{calcularEdad(c.fecha_nacimiento)} años</p>
                     {c.barrio_nombre && <p className="text-slate-400 mt-0.5">{c.barrio_nombre}</p>}
                   </td>
