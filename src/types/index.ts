@@ -11,12 +11,18 @@ export interface Barrio {
   comuna_nombre?: string;
 }
 
+export interface Ciudad {
+  id: number;
+  nombre: string;
+}
+
 export interface Lider {
   id: number;
   cedula: string;
   nombre: string;
   apellidos: string;
   sexo?: 'M' | 'F' | null;
+  ciudad_id?: number | null;
   direccion: string;
   telefono: string;
   email?: string | null;
@@ -62,6 +68,7 @@ export interface LiderFormData {
   nombre: string;
   apellidos: string;
   sexo?: 'M' | 'F' | null;
+  ciudad_id?: number | null;
   direccion: string;
   telefono: string;
   email?: string | null;

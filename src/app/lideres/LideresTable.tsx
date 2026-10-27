@@ -3,19 +3,22 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Lider } from '@/types';
+import { Ciudad, Lider } from '@/types';
 
-export default function LideresTable({ lideres }: { lideres: Lider[] }) {
+export default function LideresTable({ lideres, ciudades }: { lideres: Lider[]; ciudades: Ciudad[] }) {
   const router = useRouter();
   const [deleting, setDeleting] = useState<number | null>(null);
   const [query, setQuery] = useState('');
+  const [ciudadId, setCiudadId] = useState('');
   const [selected, setSelected] = useState<Set<number>>(new Set());
 
-  const filtrados = query.trim()
-    ? lideres.filter(l =>
-        `${l.nombre} ${l.apellidos}`.toLowerCase().includes(query.toLowerCase())
-      )
-    : lideres;
+  const nombreCiudad = new Map(ciudades.map(c => [c.id, c.nombre]));
+  const q = query.trim().toLowerCase();
+
+  const filtrados = lideres.filter(l =>
+    (!q || `${l.nombre} ${l.apellidos}`.toLowerCase().includes(q) || l.cedula.toLowerCase().includes(q)) &&
+    (!ciudadId || String(l.ciudad_id ?? '') === ciudadId)
+  );
 
   const allFilteredSelected = filtrados.length > 0 && filtrados.every(l => selected.has(l.id));
 
@@ -71,9 +74,19 @@ export default function LideresTable({ lideres }: { lideres: Lider[] }) {
           type="text"
           value={query}
           onChange={e => setQuery(e.target.value)}
-          placeholder="Buscar por nombre..."
+          placeholder="Buscar por nombre o cédula..."
           className="w-full max-w-xs border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
+        <select
+          value={ciudadId}
+          onChange={e => setCiudadId(e.target.value)}
+          className="border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">Todas las ciudades</option>
+          {ciudades.map(c => (
+            <option key={c.id} value={String(c.id)}>{c.nombre}</option>
+          ))}
+        </select>
         {selected.size > 0 && (
           <button
             onClick={handleEmail}
@@ -102,6 +115,7 @@ export default function LideresTable({ lideres }: { lideres: Lider[] }) {
               <th className="text-left px-5 py-3 text-slate-600 font-semibold">Cédula</th>
               <th className="text-left px-5 py-3 text-slate-600 font-semibold">Nombre</th>
               <th className="text-left px-5 py-3 text-slate-600 font-semibold hidden sm:table-cell">Teléfono</th>
+              <th className="text-left px-5 py-3 text-slate-600 font-semibold">Ciudad</th>
               <th className="text-center px-5 py-3 text-slate-600 font-semibold">Colaboradores</th>
               <th className="px-5 py-3"></th>
             </tr>
@@ -129,6 +143,9 @@ export default function LideresTable({ lideres }: { lideres: Lider[] }) {
                   {lider.direccion && <p className="text-xs text-slate-400 mt-0.5">{lider.direccion}</p>}
                 </td>
                 <td className="px-5 py-3.5 text-slate-500 hidden sm:table-cell">{lider.telefono}</td>
+                <td className="px-5 py-3.5 text-slate-500">
+                  {(lider.ciudad_id && nombreCiudad.get(lider.ciudad_id)) || '—'}
+                </td>
                 <td className="px-5 py-3.5 text-center">
                   <Link
                     href={`/colaboradores?lider_cedula=${lider.cedula}`}

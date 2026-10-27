@@ -3,8 +3,13 @@ export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import pool from '@/lib/db';
 import { RowDataPacket } from 'mysql2';
-import { Lider } from '@/types';
+import { Ciudad, Lider } from '@/types';
 import LideresTable from './LideresTable';
+
+async function getCiudades(): Promise<Ciudad[]> {
+  const [rows] = await pool.query<RowDataPacket[]>('SELECT id, nombre FROM ciudades ORDER BY nombre');
+  return rows as Ciudad[];
+}
 
 async function getLideres(): Promise<Lider[]> {
   const [rows] = await pool.query<RowDataPacket[]>(`
@@ -19,10 +24,11 @@ async function getLideres(): Promise<Lider[]> {
 
 export default async function LideresPage() {
   let lideres: Lider[] = [];
+  let ciudades: Ciudad[] = [];
   let dbError = false;
 
   try {
-    lideres = await getLideres();
+    [lideres, ciudades] = await Promise.all([getLideres(), getCiudades()]);
   } catch {
     dbError = true;
   }
@@ -56,7 +62,7 @@ export default async function LideresPage() {
           </Link>
         </div>
       ) : (
-        <LideresTable lideres={lideres} />
+        <LideresTable lideres={lideres} ciudades={ciudades} />
       )}
     </div>
   );

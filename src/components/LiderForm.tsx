@@ -1,16 +1,17 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
-import { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { LiderFormData } from '@/types';
+import { Ciudad, LiderFormData } from '@/types';
 
 const schema = z.object({
   cedula:    z.string().min(5, 'Mínimo 5 caracteres').max(20),
   nombre:    z.string().min(2, 'Mínimo 2 caracteres').max(100),
   apellidos: z.string().min(2, 'Mínimo 2 caracteres').max(100),
   sexo:      z.enum(['M', 'F'], { message: 'Selecciona el sexo' }),
+  ciudad_id: z.string(),
   direccion: z.string().max(255),
   telefono:  z.string().max(20),
   email:     z.union([z.string().email('Email inválido'), z.literal('')]),
@@ -19,22 +20,33 @@ const schema = z.object({
 });
 
 type FormValues = z.infer<typeof schema>;
+type SubmitValues = Omit<FormValues, 'ciudad_id'> & { ciudad_id: number | null };
 
 interface Props {
   defaultValues?: Partial<LiderFormData>;
-  onSubmit: (data: FormValues) => Promise<void>;
+  onSubmit: (data: SubmitValues) => Promise<void>;
   isLoading?: boolean;
 }
 
 export default function LiderForm({ defaultValues, onSubmit, isLoading }: Props) {
   const [showClave, setShowClave] = useState(false);
-  const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({
+  const [ciudades, setCiudades] = useState<Ciudad[]>([]);
+
+  useEffect(() => {
+    fetch('/api/ciudades')
+      .then((r) => (r.ok ? r.json() : []))
+      .then(setCiudades)
+      .catch(() => setCiudades([]));
+  }, []);
+
+  const { register, control, handleSubmit, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
       cedula:    defaultValues?.cedula    ?? '',
       nombre:    defaultValues?.nombre    ?? '',
       apellidos: defaultValues?.apellidos ?? '',
       sexo:      (defaultValues?.sexo ?? undefined) as 'M' | 'F' | undefined,
+      ciudad_id: defaultValues?.ciudad_id ? String(defaultValues.ciudad_id) : '',
       direccion: defaultValues?.direccion ?? '',
       telefono:  defaultValues?.telefono  ?? '',
       email:     defaultValues?.email     ?? '',
@@ -44,7 +56,10 @@ export default function LiderForm({ defaultValues, onSubmit, isLoading }: Props)
   });
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+    <form
+      onSubmit={handleSubmit((data) => onSubmit({ ...data, ciudad_id: data.ciudad_id ? Number(data.ciudad_id) : null }))}
+      className="space-y-5"
+    >
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <Field label="Cédula *" error={errors.cedula?.message}>
           <input {...register('cedula')} placeholder="Ej: 1234567890" className={inputCls(!!errors.cedula)} />
@@ -64,6 +79,20 @@ export default function LiderForm({ defaultValues, onSubmit, isLoading }: Props)
             <option value="M">Masculino</option>
             <option value="F">Femenino</option>
           </select>
+        </Field>
+        <Field label="Ciudad" error={errors.ciudad_id?.message}>
+          <Controller
+            name="ciudad_id"
+            control={control}
+            render={({ field }) => (
+              <select {...field} className={inputCls(!!errors.ciudad_id)}>
+                <option value="">Seleccionar...</option>
+                {ciudades.map((c) => (
+                  <option key={c.id} value={String(c.id)}>{c.nombre}</option>
+                ))}
+              </select>
+            )}
+          />
         </Field>
       </div>
       <Field label="Dirección" error={errors.direccion?.message}>
